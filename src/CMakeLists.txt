@@ -1,3 +1,4 @@
+option(BUILD_ANANBOX_DEMO "build Ananbox Demo" ON)
 #find_package(Protobuf REQUIRED)
 find_package(SDL2 REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
@@ -372,8 +373,9 @@ target_link_libraries(anbox-core
   #anbox-protobuf)
   #xdg)
 
-
+if(BUILD_ANANBOX_DEMO)
 add_executable(ananbox ananbox/main.cpp ${BACKWARD_ENABLE})
 target_link_libraries(ananbox
     anbox-core)
 add_backward(ananbox)
+endif()
