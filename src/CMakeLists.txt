@@ -1,6 +1,8 @@
 option(BUILD_ANANBOX_DEMO "build Ananbox Demo" ON)
 #find_package(Protobuf REQUIRED)
+if(BUILD_ANANBOX_DEMO)
 find_package(SDL2 REQUIRED)
+endif()
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(
@@ -250,15 +252,15 @@ set(SOURCES
     anbox/platform/base_platform.h
     anbox/platform/null/platform.cpp
     anbox/platform/null/platform.h
-    anbox/platform/sdl/audio_sink.cpp
-    anbox/platform/sdl/audio_sink.h
-    anbox/platform/sdl/keycode_converter.cpp
-    anbox/platform/sdl/keycode_converter.h
-    anbox/platform/sdl/platform.cpp
-    anbox/platform/sdl/platform.h
-    anbox/platform/sdl/sdl_wrapper.h
-    anbox/platform/sdl/window.cpp
-    anbox/platform/sdl/window.h
+    #anbox/platform/sdl/audio_sink.cpp
+    #anbox/platform/sdl/audio_sink.h
+    #anbox/platform/sdl/keycode_converter.cpp
+    #anbox/platform/sdl/keycode_converter.h
+    #anbox/platform/sdl/platform.cpp
+    #anbox/platform/sdl/platform.h
+    #anbox/platform/sdl/sdl_wrapper.h
+    #anbox/platform/sdl/window.cpp
+    #anbox/platform/sdl/window.h
 
     #anbox/protobuf/anbox_bridge.proto
     #anbox/protobuf/anbox_container.proto
