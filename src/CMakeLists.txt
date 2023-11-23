@@ -1,4 +1,4 @@
-find_package(Protobuf REQUIRED)
+#find_package(Protobuf REQUIRED)
 find_package(SDL2 REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -35,33 +35,33 @@ include_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBINDERFS_PATH=\"\\\"${BINDERFS_PATH}\\\"\"")
 
-protobuf_generate_cpp(
-    GENERATED_PROTOBUF_RPC_SRCS GENERATED_PROTOBUF_RPC_HDRS
-    anbox/protobuf/anbox_rpc.proto)
+#protobuf_generate_cpp(
+#    GENERATED_PROTOBUF_RPC_SRCS GENERATED_PROTOBUF_RPC_HDRS
+#    anbox/protobuf/anbox_rpc.proto)
 
-protobuf_generate_cpp(
-    GENERATED_PROTOBUF_BRIDGE_SRCS GENERATED_PROTOBUF_BRIDGE_HDRS
-    anbox/protobuf/anbox_bridge.proto)
+#protobuf_generate_cpp(
+    #    GENERATED_PROTOBUF_BRIDGE_SRCS GENERATED_PROTOBUF_BRIDGE_HDRS
+    #    anbox/protobuf/anbox_bridge.proto)
 
 #protobuf_generate_cpp(
 #    GENERATED_PROTOBUF_CONTAINER_SRCS GENERATED_PROTOBUF_CONTAINER_HDRS
 #    anbox/protobuf/anbox_container.proto)
 
 
-add_library(anbox-protobuf
-    STATIC
-    ${GENERATED_PROTOBUF_BRIDGE_SRCS}
-    ${GENERATED_PROTOBUF_BRIDGE_HDRS}
-    ${GENERATED_PROTOBUF_RPC_SRCS}
-    ${GENERATED_PROTOBUF_RPC_HDRS}
-    ${GENERATED_PROTOBUF_CONTAINER_SRCS}
-    ${GENERATED_PROTOBUF_CONTAINER_HDRS}
-    anbox/protobuf/anbox_rpc.proto
-    anbox/protobuf/anbox_bridge.proto
+#add_library(anbox-protobuf
+    #STATIC
+    #${GENERATED_PROTOBUF_BRIDGE_SRCS}
+    #${GENERATED_PROTOBUF_BRIDGE_HDRS}
+    #${GENERATED_PROTOBUF_RPC_SRCS}
+    #${GENERATED_PROTOBUF_RPC_HDRS}
+    #${GENERATED_PROTOBUF_CONTAINER_SRCS}
+    #${GENERATED_PROTOBUF_CONTAINER_HDRS}
+    #anbox/protobuf/anbox_rpc.proto
+    #anbox/protobuf/anbox_bridge.proto
     #anbox/protobuf/anbox_container.proto
-    anbox/protobuf/google_protobuf_guard.cpp)
-target_link_libraries(anbox-protobuf
-    ${PROTOBUF_LITE_LIBRARIES})
+    #anbox/protobuf/google_protobuf_guard.cpp)
+    #target_link_libraries(anbox-protobuf
+    #${PROTOBUF_LITE_LIBRARIES})
 
 set(SOURCES
     anbox/android/intent.cpp
@@ -83,12 +83,12 @@ set(SOURCES
     anbox/audio/sink.h
     anbox/audio/source.h
 
-    anbox/bridge/android_api_stub.cpp
-    anbox/bridge/android_api_stub.h
-    anbox/bridge/platform_api_skeleton.cpp
-    anbox/bridge/platform_api_skeleton.h
-    anbox/bridge/platform_message_processor.cpp
-    anbox/bridge/platform_message_processor.h
+    #anbox/bridge/android_api_stub.cpp
+    #anbox/bridge/android_api_stub.h
+    #anbox/bridge/platform_api_skeleton.cpp
+    #anbox/bridge/platform_api_skeleton.h
+    #anbox/bridge/platform_message_processor.cpp
+    #anbox/bridge/platform_message_processor.h
 
     anbox/build/config.h
     anbox/build/config.h.in
@@ -259,10 +259,10 @@ set(SOURCES
     anbox/platform/sdl/window.cpp
     anbox/platform/sdl/window.h
 
-    anbox/protobuf/anbox_bridge.proto
+    #anbox/protobuf/anbox_bridge.proto
     #anbox/protobuf/anbox_container.proto
-    anbox/protobuf/anbox_rpc.proto
-    anbox/protobuf/google_protobuf_guard.cpp
+    #anbox/protobuf/anbox_rpc.proto
+    #anbox/protobuf/google_protobuf_guard.cpp
 
     anbox/qemu/adb_message_processor.cpp
     anbox/qemu/adb_message_processor.h
@@ -291,17 +291,17 @@ set(SOURCES
     anbox/qemu/sensors_message_processor.cpp
     anbox/qemu/sensors_message_processor.h
 
-    anbox/rpc/channel.cpp
-    anbox/rpc/channel.h
-    anbox/rpc/connection_creator.cpp
-    anbox/rpc/connection_creator.h
-    anbox/rpc/constants.h
-    anbox/rpc/make_protobuf_object.h
-    anbox/rpc/message_processor.cpp
-    anbox/rpc/message_processor.h
-    anbox/rpc/pending_call_cache.cpp
-    anbox/rpc/pending_call_cache.h
-    anbox/rpc/template_message_processor.h
+    #anbox/rpc/channel.cpp
+    #anbox/rpc/channel.h
+    #anbox/rpc/connection_creator.cpp
+    #anbox/rpc/connection_creator.h
+    #anbox/rpc/constants.h
+    #anbox/rpc/make_protobuf_object.h
+    #anbox/rpc/message_processor.cpp
+    #anbox/rpc/message_processor.h
+    #anbox/rpc/pending_call_cache.cpp
+    #anbox/rpc/pending_call_cache.h
+    #anbox/rpc/template_message_processor.h
 
     anbox/testing/gtest_utils.h
 
@@ -368,8 +368,8 @@ target_link_libraries(anbox-core
   GLESv2_dec
   renderControl_dec
   OpenGLESDispatch
-  OpenglCodecCommon
-  anbox-protobuf)
+  OpenglCodecCommon)
+  #anbox-protobuf)
   #xdg)
 
 
