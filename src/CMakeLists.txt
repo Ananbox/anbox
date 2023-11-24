@@ -7,33 +7,27 @@ include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(
   ${Boost_INCLUDE_DIRS}
-  ${MIRCLIENT_INCLUDE_DIRS}
-  ${DBUS_INCLUDE_DIRS}
   ${SDL2_INCLUDE_DIRS}
   ${SDL2_IMAGE_INCLUDE_DIRS}
   ${PROPERTIES_CPP_INCLUDE_DIRS}
-  ${LXC_INCLUDE_DIRS}
-  ${MIRCLIENT_INCLUDE_DIRS}
-  ${LIBSYSTEMD_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}
-  ${CMAKE_SOURCE_DIR}/src
-  ${CMAKE_SOURCE_DIR}/external
-  ${CMAKE_SOURCE_DIR}/external/process-cpp-minimal/include
-  ${CMAKE_SOURCE_DIR}/external/android-emugl/shared
-  ${CMAKE_SOURCE_DIR}/external/android-emugl/host/include
-  ${CMAKE_BINARY_DIR}/external/android-emugl/host/include
-  ${CMAKE_SOURCE_DIR}/external/android-emugl/shared/OpenglCodecCommon
-  ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs
-  ${CMAKE_SOURCE_DIR}/external/android-emugl/host/include/libOpenglRender
-  ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs/GLESv1_dec
-  ${CMAKE_BINARY_DIR}/external/android-emugl/host/libs/GLESv1_dec
-  ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs/GLESv2_dec
-  ${CMAKE_BINARY_DIR}/external/android-emugl/host/libs/GLESv2_dec
-  ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs/renderControl_dec
-  ${CMAKE_BINARY_DIR}/external/android-emugl/host/libs/renderControl_dec
-  #${CMAKE_SOURCE_DIR}/external/cpu_features/include
-  #${CMAKE_SOURCE_DIR}/external/sdbus-cpp/include
+  ${PROJECT_SOURCE_DIR}
+  ${PROJECT_SOURCE_DIR}/src
+  ${PROJECT_SOURCE_DIR}/external
+  #${PROJECT_SOURCE_DIR}/external/process-cpp-minimal/include
+  ${PROJECT_SOURCE_DIR}/external/android-emugl/shared
+  ${PROJECT_SOURCE_DIR}/external/android-emugl/host/include
+  ${PROJECT_BINARY_DIR}/external/android-emugl/host/include
+  ${PROJECT_SOURCE_DIR}/external/android-emugl/shared/OpenglCodecCommon
+  ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs
+  ${PROJECT_SOURCE_DIR}/external/android-emugl/host/include/libOpenglRender
+  ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs/GLESv1_dec
+  ${PROJECT_BINARY_DIR}/external/android-emugl/host/libs/GLESv1_dec
+  ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs/GLESv2_dec
+  ${PROJECT_BINARY_DIR}/external/android-emugl/host/libs/GLESv2_dec
+  ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs/renderControl_dec
+  ${PROJECT_BINARY_DIR}/external/android-emugl/host/libs/renderControl_dec
+  #${PROJECT_SOURCE_DIR}/external/cpu_features/include
+  #${PROJECT_SOURCE_DIR}/external/sdbus-cpp/include
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBINDERFS_PATH=\"\\\"${BINDERFS_PATH}\\\"\"")
@@ -76,7 +70,7 @@ set(SOURCES
     anbox/application/database.h
     anbox/application/launcher_storage.cpp
     anbox/application/launcher_storage.h
-    anbox/application/manager.h
+    #anbox/application/manager.h
     anbox/application/sensor_type.cpp
     anbox/application/sensor_type.h
 
@@ -248,10 +242,10 @@ set(SOURCES
     anbox/network/tcp_socket_messenger.cpp
     anbox/network/tcp_socket_messenger.h
 
-    anbox/platform/base_platform.cpp
-    anbox/platform/base_platform.h
-    anbox/platform/null/platform.cpp
-    anbox/platform/null/platform.h
+    #anbox/platform/base_platform.cpp
+    #anbox/platform/base_platform.h
+    #anbox/platform/null/platform.cpp
+    #anbox/platform/null/platform.h
     #anbox/platform/sdl/audio_sink.cpp
     #anbox/platform/sdl/audio_sink.h
     #anbox/platform/sdl/keycode_converter.cpp
@@ -308,8 +302,8 @@ set(SOURCES
 
     anbox/testing/gtest_utils.h
 
-    anbox/ui/splash_screen.cpp
-    anbox/ui/splash_screen.h
+    #anbox/ui/splash_screen.cpp
+    #anbox/ui/splash_screen.h
 
     anbox/utils/environment_file.cpp
     anbox/utils/environment_file.h
@@ -318,8 +312,8 @@ set(SOURCES
     anbox/wm/display.h
     anbox/wm/manager.cpp
     anbox/wm/manager.h
-    anbox/wm/multi_window_manager.cpp
-    anbox/wm/multi_window_manager.h
+    #anbox/wm/multi_window_manager.cpp
+    #anbox/wm/multi_window_manager.h
     anbox/wm/single_window_manager.cpp
     anbox/wm/single_window_manager.h
     anbox/wm/stack.cpp
@@ -351,7 +345,6 @@ set(SOURCES
 
 add_library(anbox-core STATIC ${SOURCES})
 target_link_libraries(anbox-core
-  ${Boost_LDFLAGS}
   ${Boost_LIBRARIES}
   ${SDL2_LDFLAGS}
   ${SDL2_LIBRARIES}
@@ -364,8 +357,8 @@ target_link_libraries(anbox-core
   ${LIBSYSTEMD_LDFLAGS}
   ${LIBSYSTEMD_LIBRARIES}
   #cpu_features
-  pthread
-  process-cpp
+  #pthread
+  #process-cpp
   emugl_common
   GLESv1_dec
   GLESv2_dec

@@ -30,4 +30,5 @@ set(COMMON_SOURCES
 
 add_library(emugl_common STATIC ${COMMON_SOURCES})
 target_link_libraries(emugl_common
-    dl pthread)
+    dl) 
+    #pthread)

@@ -48,7 +48,7 @@ void ConnectionCreator::create_connection_for(
       std::make_shared<network::LocalSocketMessenger>(socket);
   auto const processor = message_processor_factory_(messenger);
 
-  auto const& connection = std::make_shared<network::SocketConnection>(
+  auto connection = std::make_shared<network::SocketConnection>(
       messenger, messenger, next_id(), connections_, processor);
   connection->set_name("rpc");
   connections_->add(connection);

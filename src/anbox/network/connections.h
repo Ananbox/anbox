@@ -30,7 +30,7 @@ class Connections {
   Connections() {}
   ~Connections() { clear(); }
 
-  void add(std::shared_ptr<Connection> const& connection) {
+  void add(std::shared_ptr<Connection> & connection) {
     std::unique_lock<std::mutex> lock(mutex);
     connections.insert({connection->id(), connection});
   }
@@ -40,7 +40,7 @@ class Connections {
     connections.erase(id);
   }
 
-  bool includes(int id) const {
+  bool includes(int id) {
     std::unique_lock<std::mutex> lock(mutex);
     return connections.find(id) != connections.end();
   }

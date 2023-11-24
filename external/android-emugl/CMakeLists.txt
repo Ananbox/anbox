@@ -7,21 +7,22 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Wall")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/shared
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/host/include
-    ${CMAKE_BINARY_DIR}/external/android-emugl/host/include
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/shared/OpenglCodecCommon
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/host/include/libOpenglRender
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs/GLESv1_dec
-    ${CMAKE_BINARY_DIR}/external/android-emugl/host/libs/GLESv1_dec
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs/GLESv2_dec
-    ${CMAKE_BINARY_DIR}/external/android-emugl/host/libs/GLESv2_dec
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs/renderControl_dec
-    ${CMAKE_BINARY_DIR}/external/android-emugl/host/libs/renderControl_dec
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs/Translator/
-    ${CMAKE_SOURCE_DIR}/external/android-emugl/host/libs/Translator/include
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/shared
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/host/include
+    ${PROJECT_BINARY_DIR}/external/android-emugl/host/include
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/shared/OpenglCodecCommon
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/host/include/libOpenglRender
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs/GLESv1_dec
+    ${PROJECT_BINARY_DIR}/external/android-emugl/host/libs/GLESv1_dec
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs/GLESv2_dec
+    ${PROJECT_BINARY_DIR}/external/android-emugl/host/libs/GLESv2_dec
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs/renderControl_dec
+    ${PROJECT_BINARY_DIR}/external/android-emugl/host/libs/renderControl_dec
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs/Translator/
+    ${PROJECT_SOURCE_DIR}/external/android-emugl/host/libs/Translator/include
     ${MIRCLIENT_INCLUDE_DIRS})
 
 add_subdirectory(host)

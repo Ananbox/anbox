@@ -157,7 +157,7 @@ void Device::new_client(
         &socket) {
   auto const messenger =
       std::make_shared<network::LocalSocketMessenger>(socket);
-  auto const &connection = std::make_shared<network::SocketConnection>(
+  auto connection = std::make_shared<network::SocketConnection>(
       messenger, messenger, next_id(), connections_,
       std::make_shared<qemu::NullMessageProcessor>());
   connection->set_name("input-device");
