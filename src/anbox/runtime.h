@@ -27,6 +27,10 @@
 
 #include "anbox/do_not_copy_or_move.h"
 
+namespace anbox::network {
+    class PublishedSocketConnector;
+}
+
 namespace anbox {
 
 // We bundle our "global" runtime dependencies here, specifically
@@ -60,6 +64,9 @@ class Runtime : public DoNotCopyOrMove,
   // service returns the underlying boost::asio::io_service that is executed
   // by the Runtime.
   boost::asio::io_service& service();
+
+  // keep the reference of qemu_pipe to keep it running in background
+  std::shared_ptr<anbox::network::PublishedSocketConnector> qemu_pipe_connector;
 
  private:
   // Runtime constructs a new instance, firing up pool_size
