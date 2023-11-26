@@ -23,7 +23,7 @@ RenderContext* RenderContext::create(EGLDisplay display, EGLConfig config,
   const EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, isGl2 ? 2 : 1,
                                    EGL_NONE};
   EGLContext context =
-      s_egl.eglCreateContext(display, config, sharedContext, contextAttribs);
+      eglCreateContext(display, config, sharedContext, contextAttribs);
   if (context == EGL_NO_CONTEXT) {
     return NULL;
   }
@@ -36,6 +36,6 @@ RenderContext::RenderContext(EGLDisplay display, EGLContext context, bool isGl2)
 
 RenderContext::~RenderContext() {
   if (mContext != EGL_NO_CONTEXT) {
-    s_egl.eglDestroyContext(mDisplay, mContext);
+    eglDestroyContext(mDisplay, mContext);
   }
 }

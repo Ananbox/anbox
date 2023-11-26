@@ -130,7 +130,7 @@ TEST_F(SharedLibraryTest, OpenFailureWithError) {
 }
 
 TEST_F(SharedLibraryTest, OpenLibraryWithExtension) {
-    std::string path = library_path();
+    const char *const path = library_path();
 
     // test extension append
     ScopedSharedLibrary libNoExtension(SharedLibrary::open(path.c_str()));

@@ -49,15 +49,15 @@ typedef std::map<HandleType, ColorBufferRef> ColorBufferMap;
 
 // A structure used to list the capabilities of the underlying EGL
 // implementation that the FrameBuffer instance depends on.
-// |has_eglimage_texture_2d| is true iff the EGL_KHR_gl_texture_2D_image
+// |hamage_texture_2d| is true iff the EGL_KHR_gl_texture_2D_image
 // extension is supported.
-// |has_eglimage_renderbuffer| is true iff the EGL_KHR_gl_renderbuffer_image
+// |hamage_renderbuffer| is true iff the EGL_KHR_gl_renderbuffer_image
 // extension is supported.
 // |eglMajor| and |eglMinor| are the major and minor version numbers of
 // the underlying EGL implementation.
 struct RendererCaps {
-  bool has_eglimage_texture_2d;
-  bool has_eglimage_renderbuffer;
+  bool hamage_texture_2d;
+  bool hamage_renderbuffer;
   EGLint eglMajor;
   EGLint eglMinor;
 };

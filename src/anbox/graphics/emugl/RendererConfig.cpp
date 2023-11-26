@@ -46,16 +46,16 @@ bool isCompatibleHostConfig(EGLConfig config, EGLDisplay display) {
   // Filter out configs which do not support pbuffers, since they
   // are used to implement window surfaces.
   EGLint surfaceType;
-  s_egl.eglGetConfigAttrib(display, config, EGL_SURFACE_TYPE, &surfaceType);
+  eglGetConfigAttrib(display, config, EGL_SURFACE_TYPE, &surfaceType);
   if (!(surfaceType & EGL_PBUFFER_BIT)) {
     return false;
   }
 
   // Filter out configs that do not support RGB pixel values.
   EGLint redSize = 0, greenSize = 0, blueSize = 0;
-  s_egl.eglGetConfigAttrib(display, config, EGL_RED_SIZE, &redSize);
-  s_egl.eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &greenSize);
-  s_egl.eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &blueSize);
+  eglGetConfigAttrib(display, config, EGL_RED_SIZE, &redSize);
+  eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &greenSize);
+  eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &blueSize);
 
   if (!redSize || !greenSize || !blueSize) {
     return false;
@@ -72,7 +72,7 @@ RendererConfig::RendererConfig(EGLConfig hostConfig, EGLDisplay hostDisplay)
   mAttribValues = new GLint[kConfigAttributesLen];
   for (size_t i = 0; i < kConfigAttributesLen; ++i) {
     mAttribValues[i] = 0;
-    s_egl.eglGetConfigAttrib(hostDisplay, hostConfig, kConfigAttributes[i],
+    eglGetConfigAttrib(hostDisplay, hostConfig, kConfigAttributes[i],
                              &mAttribValues[i]);
 
     // This implementation supports guest window surfaces by wrapping
@@ -91,12 +91,12 @@ RendererConfigList::RendererConfigList(EGLDisplay display)
   }
 
   EGLint numHostConfigs = 0;
-  if (!s_egl.eglGetConfigs(display, NULL, 0, &numHostConfigs)) {
+  if (!eglGetConfigs(display, NULL, 0, &numHostConfigs)) {
     ERROR("Could not get number of host EGL config");
     return;
   }
   EGLConfig* hostConfigs = new EGLConfig[numHostConfigs];
-  s_egl.eglGetConfigs(display, hostConfigs, numHostConfigs, &numHostConfigs);
+  eglGetConfigs(display, hostConfigs, numHostConfigs, &numHostConfigs);
 
   mConfigs = new RendererConfig*[numHostConfigs];
   for (EGLint i = 0; i < numHostConfigs; ++i) {
@@ -121,7 +121,7 @@ RendererConfigList::~RendererConfigList() {
 int RendererConfigList::chooseConfig(const EGLint* attribs, EGLint* configs,
                                      EGLint configsSize) const {
   EGLint numHostConfigs = 0;
-  if (!s_egl.eglGetConfigs(mDisplay, NULL, 0, &numHostConfigs)) {
+  if (!eglGetConfigs(mDisplay, NULL, 0, &numHostConfigs)) {
     ERROR("Could not get number of host EGL configs");
     return 0;
   }
@@ -168,7 +168,7 @@ int RendererConfigList::chooseConfig(const EGLint* attribs, EGLint* configs,
     newAttribs[numAttribs + 2] = EGL_NONE;
   }
 
-  if (!s_egl.eglChooseConfig(mDisplay, newAttribs ? newAttribs : attribs,
+  if (!eglChooseConfig(mDisplay, newAttribs ? newAttribs : attribs,
                              matchedConfigs, numHostConfigs, &numHostConfigs)) {
     numHostConfigs = 0;
   }
@@ -188,7 +188,7 @@ int RendererConfigList::chooseConfig(const EGLint* attribs, EGLint* configs,
     }
     // Find the FbConfig with the same EGL_CONFIG_ID
     EGLint hostConfigId;
-    s_egl.eglGetConfigAttrib(mDisplay, matchedConfigs[n], EGL_CONFIG_ID,
+    eglGetConfigAttrib(mDisplay, matchedConfigs[n], EGL_CONFIG_ID,
                              &hostConfigId);
     for (int k = 0; k < mCount; ++k) {
       int guestConfigId = mConfigs[k]->getConfigId();

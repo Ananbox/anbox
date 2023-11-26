@@ -21,6 +21,7 @@
 #include <map>
 #include <memory>
 #include <cstdint>
+#include <string>
 
 namespace anbox{
   class Runtime;
@@ -30,7 +31,7 @@ namespace anbox::input {
 class Device;
 class Manager {
  public:
-  Manager(const std::shared_ptr<Runtime> &runtime);
+  Manager(const std::shared_ptr<Runtime> &runtime, const std::string &dir);
   ~Manager();
 
   std::shared_ptr<Device> create_device();
@@ -39,6 +40,7 @@ class Manager {
   std::uint32_t next_id();
   std::string build_device_path(const std::uint32_t &id);
 
+  std::string dir_;
   std::shared_ptr<Runtime> runtime_;
   std::map<std::uint32_t, std::shared_ptr<Device>> devices_;
 };

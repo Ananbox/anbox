@@ -719,13 +719,13 @@ int ApiGen::genEncoderImpl(const std::string &filename)
         EntryPoint *e = &at(i);
         if (e->unsupported()) {
             fprintf(fp, 
-                    "\tthis->%s = (%s_%s_proc_t) &enc_unsupported;\n",
+                    "\t%s = (%s_%s_proc_t) &enc_unsupported;\n",
                     e->name().c_str(),
                     e->name().c_str(),
                     sideString(CLIENT_SIDE));
         } else {
             fprintf(fp,
-                    "\tthis->%s = &%s_enc;\n",
+                    "\t%s = &%s_enc;\n",
                     e->name().c_str(),
                     e->name().c_str());
         }
@@ -859,7 +859,7 @@ int ApiGen::genDecoderImpl(const std::string &filename)
 \tm_lock.lock();\n\
 \twhile(it != m_shaders.end()) \n\
 \t{\n\
-\t\tthis->glDeleteShader(it->first);\n\
+\t\tglDeleteShader(it->first);\n\
 \t\tit++;\n\
 \t}\n\
 \tm_lock.unlock();\n\
@@ -872,7 +872,7 @@ int ApiGen::genDecoderImpl(const std::string &filename)
 \tm_lock.lock();\n\
 \twhile(it != m_programs.end()) \n\
 \t{\n\
-\t\tthis->glDeleteProgram(it->first);\n\
+\t\tglDeleteProgram(it->first);\n\
 \t\tit++;\n\
 \t}\n\
 \tm_lock.unlock();\n\
@@ -946,7 +946,7 @@ int ApiGen::genDecoderImpl(const std::string &filename)
 
 
             if (pass == PASS_FunctionCall) {
-                fprintf(fp, "\t\t\tthis->%s(", e->name().c_str());
+                fprintf(fp, "\t\t\t%s(", e->name().c_str());
                 if (e->customDecoder()) {
                     fprintf(fp, "this"); // add a context to the call
                 }
@@ -1245,7 +1245,7 @@ int ApiGen::genDecoderImpl(const std::string &filename)
     fprintf(fp, "\t\t} //switch\n");
     if (strstr(m_basename.c_str(), "gl")) {
         fprintf(fp, "#ifdef CHECK_GL_ERROR\n");
-        fprintf(fp, "\tint err = lastCall[0] ? this->glGetError() : GL_NO_ERROR;\n");
+        fprintf(fp, "\tint err = lastCall[0] ? glGetError() : GL_NO_ERROR;\n");
         fprintf(fp, "\tif (err) fprintf(stderr, \"%s Error: 0x%%X in %%s\\n\", err, lastCall);\n", m_basename.c_str());
         fprintf(fp, "#endif\n");
     }

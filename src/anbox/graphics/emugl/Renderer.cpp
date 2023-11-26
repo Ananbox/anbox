@@ -24,13 +24,14 @@
 #include "external/android-emugl/host/include/OpenGLESDispatch/EGLDispatch.h"
 
 // Generated with emugl at build time
-#include "gles2_dec.h"
+// #include "gles2_dec.h"
 
 #include <stdio.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
+#include <EGL/eglext.h>
 
 namespace {
 
@@ -87,31 +88,31 @@ void Renderer::finalize() {
   m_colorbuffers.clear();
   m_windows.clear();
   m_contexts.clear();
-  s_egl.eglMakeCurrent(m_eglDisplay, NULL, NULL, NULL);
-  s_egl.eglDestroyContext(m_eglDisplay, m_eglContext);
-  s_egl.eglDestroyContext(m_eglDisplay, m_pbufContext);
-  s_egl.eglDestroySurface(m_eglDisplay, m_pbufSurface);
+  eglMakeCurrent(m_eglDisplay, NULL, NULL, NULL);
+  eglDestroyContext(m_eglDisplay, m_eglContext);
+  eglDestroyContext(m_eglDisplay, m_pbufContext);
+  eglDestroySurface(m_eglDisplay, m_pbufSurface);
 }
 
 bool Renderer::initialize(EGLNativeDisplayType nativeDisplay) {
-  m_eglDisplay = s_egl.eglGetDisplay(nativeDisplay);
+  m_eglDisplay = eglGetDisplay(nativeDisplay);
   if (m_eglDisplay == EGL_NO_DISPLAY) {
     ERROR("Failed to Initialize backend EGL display");
     return false;
   }
 
-  if (!s_egl.eglInitialize(m_eglDisplay, &m_caps.eglMajor, &m_caps.eglMinor)) {
+  if (!eglInitialize(m_eglDisplay, &m_caps.eglMajor, &m_caps.eglMinor)) {
     ERROR("Failed to initialize EGL");
     return false;
   }
 
-  anbox::graphics::GLExtensions egl_extensions{s_egl.eglQueryString(m_eglDisplay, EGL_EXTENSIONS)};
+  anbox::graphics::GLExtensions egl_extensions{eglQueryString(m_eglDisplay, EGL_EXTENSIONS)};
 
   const auto surfaceless_supported = egl_extensions.support("EGL_KHR_surfaceless_context");
   if (!surfaceless_supported)
     DEBUG("EGL doesn't support surfaceless context");
 
-  s_egl.eglBindAPI(EGL_OPENGL_ES_API);
+  eglBindAPI(EGL_OPENGL_ES_API);
 
   // Create EGL context for framebuffer post rendering.
   GLint surfaceType = EGL_WINDOW_BIT | EGL_PBUFFER_BIT;
@@ -123,7 +124,7 @@ bool Renderer::initialize(EGLNativeDisplayType nativeDisplay) {
                                  EGL_NONE};
 
   int n;
-  if ((s_egl.eglChooseConfig(m_eglDisplay, configAttribs, &m_eglConfig,
+  if ((eglChooseConfig(m_eglDisplay, configAttribs, &m_eglConfig,
                              1, &n) == EGL_FALSE) || n == 0) {
     ERROR("Failed to select EGL configuration");
     return false;
@@ -132,10 +133,10 @@ bool Renderer::initialize(EGLNativeDisplayType nativeDisplay) {
   static const GLint glContextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2,
                                            EGL_NONE};
 
-  m_eglContext = s_egl.eglCreateContext(m_eglDisplay, m_eglConfig,
+  m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig,
                                         EGL_NO_CONTEXT, glContextAttribs);
   if (m_eglContext == EGL_NO_CONTEXT) {
-    ERROR("Failed to create context: error=0x%x", s_egl.eglGetError());
+    ERROR("Failed to create context: error=0x%x", eglGetError());
     return false;
   }
 
@@ -145,9 +146,9 @@ bool Renderer::initialize(EGLNativeDisplayType nativeDisplay) {
   // The main purpose of it is to solve a "blanking" behaviour we see on
   // on Mac platform when switching binded drawable for a context however
   // it is more efficient on other platforms as well.
-  m_pbufContext = s_egl.eglCreateContext(m_eglDisplay, m_eglConfig, m_eglContext, glContextAttribs);
+  m_pbufContext = eglCreateContext(m_eglDisplay, m_eglConfig, m_eglContext, glContextAttribs);
   if (m_pbufContext == EGL_NO_CONTEXT) {
-    ERROR("Failed to create pbuffer context: error=0x%x", s_egl.eglGetError());
+    ERROR("Failed to create pbuffer context: error=0x%x", eglGetError());
     return false;
   }
 
@@ -156,9 +157,9 @@ bool Renderer::initialize(EGLNativeDisplayType nativeDisplay) {
     // the FB context. The FB output will go to a subwindow, if one exist.
     static const EGLint pbufAttribs[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
-    m_pbufSurface = s_egl.eglCreatePbufferSurface(m_eglDisplay, m_eglConfig, pbufAttribs);
+    m_pbufSurface = eglCreatePbufferSurface(m_eglDisplay, m_eglConfig, pbufAttribs);
     if (m_pbufSurface == EGL_NO_SURFACE) {
-      ERROR("Failed to create pbuffer surface: error=0x%x", s_egl.eglGetError());
+      ERROR("Failed to create pbuffer surface: error=0x%x", eglGetError());
       return false;
     }
   } else {
@@ -173,20 +174,20 @@ bool Renderer::initialize(EGLNativeDisplayType nativeDisplay) {
     return false;
   }
 
-  anbox::graphics::GLExtensions gl_extensions{reinterpret_cast<const char *>(s_gles2.glGetString(GL_EXTENSIONS))};
+  anbox::graphics::GLExtensions gl_extensions{reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS))};
   if (gl_extensions.support("GL_OES_EGL_image")) {
-    m_caps.has_eglimage_texture_2d = egl_extensions.support("EGL_KHR_gl_texture_2D_image");
-    m_caps.has_eglimage_renderbuffer = egl_extensions.support("EGL_KHR_gl_renderbuffer_image");
+    m_caps.hamage_texture_2d = egl_extensions.support("EGL_KHR_gl_texture_2D_image");
+    m_caps.hamage_renderbuffer = egl_extensions.support("EGL_KHR_gl_renderbuffer_image");
   } else {
-    m_caps.has_eglimage_texture_2d = false;
-    m_caps.has_eglimage_renderbuffer = false;
+    m_caps.hamage_texture_2d = false;
+    m_caps.hamage_renderbuffer = false;
   }
 
   // Fail initialization if not all of the following extensions
   // exist:
   //     EGL_KHR_gl_texture_2d_image
   //     GL_OES_EGL_IMAGE
-  if (!m_caps.has_eglimage_texture_2d) {
+  if (!m_caps.hamage_texture_2d) {
     ERROR("Failed: Missing egl_image related extension(s)");
     bind.release();
     return false;
@@ -229,9 +230,9 @@ bool Renderer::initialize(EGLNativeDisplayType nativeDisplay) {
 
   // Cache the GL strings so we don't have to think about threading or
   // current-context when asked for them.
-  m_glVendor = reinterpret_cast<const char *>(s_gles2.glGetString(GL_VENDOR));
-  m_glRenderer = reinterpret_cast<const char *>(s_gles2.glGetString(GL_RENDERER));
-  m_glVersion = reinterpret_cast<const char *>(s_gles2.glGetString(GL_VERSION));
+  m_glVendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
+  m_glRenderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+  m_glVersion = reinterpret_cast<const char *>(glGetString(GL_VERSION));
 
   m_textureDraw = new TextureDraw(m_eglDisplay);
   if (!m_textureDraw) {
@@ -252,16 +253,16 @@ bool Renderer::initialize(EGLNativeDisplayType nativeDisplay) {
 
 Renderer::Program::Program(GLuint program_id) {
   id = program_id;
-  position_attr = s_gles2.glGetAttribLocation(id, "position");
-  texcoord_attr = s_gles2.glGetAttribLocation(id, "texcoord");
-  tex_uniform = s_gles2.glGetUniformLocation(id, "tex");
-  center_uniform = s_gles2.glGetUniformLocation(id, "center");
+  position_attr = glGetAttribLocation(id, "position");
+  texcoord_attr = glGetAttribLocation(id, "texcoord");
+  tex_uniform = glGetUniformLocation(id, "tex");
+  center_uniform = glGetUniformLocation(id, "center");
   display_transform_uniform =
-      s_gles2.glGetUniformLocation(id, "display_transform");
-  transform_uniform = s_gles2.glGetUniformLocation(id, "transform");
+      glGetUniformLocation(id, "display_transform");
+  transform_uniform = glGetUniformLocation(id, "transform");
   screen_to_gl_coords_uniform =
-      s_gles2.glGetUniformLocation(id, "screen_to_gl_coords");
-  alpha_uniform = s_gles2.glGetUniformLocation(id, "alpha");
+      glGetUniformLocation(id, "screen_to_gl_coords");
+  alpha_uniform = glGetUniformLocation(id, "alpha");
 }
 
 Renderer::Renderer()
@@ -303,7 +304,7 @@ RendererWindow *Renderer::createNativeWindow(
 
   auto window = new RendererWindow;
   window->native_window = native_window;
-  window->surface = s_egl.eglCreateWindowSurface(
+  window->surface = eglCreateWindowSurface(
       m_eglDisplay, m_eglConfig, window->native_window, nullptr);
   if (window->surface == EGL_NO_SURFACE) {
     delete window;
@@ -312,15 +313,15 @@ RendererWindow *Renderer::createNativeWindow(
   }
 
   if (!bindWindow_locked(window)) {
-    s_egl.eglDestroySurface(m_eglDisplay, window->surface);
+    eglDestroySurface(m_eglDisplay, window->surface);
     delete window;
     m_lock.unlock();
     return nullptr;
   }
 
-  s_gles2.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
                   GL_STENCIL_BUFFER_BIT);
-  s_egl.eglSwapBuffers(m_eglDisplay, window->surface);
+  eglSwapBuffers(m_eglDisplay, window->surface);
 
   unbind_locked();
 
@@ -337,10 +338,10 @@ void Renderer::destroyNativeWindow(EGLNativeWindowType native_window) {
 
   m_lock.lock();
 
-  s_egl.eglMakeCurrent(m_eglDisplay, nullptr, nullptr, nullptr);
+  eglMakeCurrent(m_eglDisplay, nullptr, nullptr, nullptr);
 
   if (w->second->surface != EGL_NO_SURFACE)
-    s_egl.eglDestroySurface(m_eglDisplay, w->second->surface);
+    eglDestroySurface(m_eglDisplay, w->second->surface);
 
   delete w->second;
   m_nativeWindows.erase(w);
@@ -366,7 +367,7 @@ HandleType Renderer::createColorBuffer(int p_width, int p_height,
 
   ColorBufferPtr cb(ColorBuffer::create(
       getDisplay(), p_width, p_height, p_internalFormat,
-      getCaps().has_eglimage_texture_2d, m_colorBufferHelper));
+      getCaps().hamage_texture_2d, m_colorBufferHelper));
   if (cb) {
     ret = genHandle();
     m_colorbuffers[ret].cb = cb;
@@ -651,11 +652,11 @@ bool Renderer::bindContext(HandleType p_context, HandleType p_drawSurface,
     }
   }
 
-  if (!s_egl.eglMakeCurrent(m_eglDisplay,
+  if (!eglMakeCurrent(m_eglDisplay,
                             draw ? draw->getEGLSurface() : EGL_NO_SURFACE,
                             read ? read->getEGLSurface() : EGL_NO_SURFACE,
                             ctx ? ctx->getEGLContext() : EGL_NO_CONTEXT)) {
-    ERROR("eglMakeCurrent failed: 0x%04x", s_egl.eglGetError());
+    ERROR("eglMakeCurrent failed: 0x%04x", eglGetError());
     return false;
   }
 
@@ -716,14 +717,14 @@ HandleType Renderer::createClientImage(HandleType context, EGLenum target,
 
   EGLContext eglContext = ctx ? ctx->getEGLContext() : EGL_NO_CONTEXT;
   EGLImageKHR image =
-      s_egl.eglCreateImageKHR(m_eglDisplay, eglContext, target,
+      eglCreateImageKHR(m_eglDisplay, eglContext, target,
                               reinterpret_cast<EGLClientBuffer>(buffer), NULL);
 
   return static_cast<HandleType>(reinterpret_cast<uintptr_t>(image));
 }
 
 EGLBoolean Renderer::destroyClientImage(HandleType image) {
-  return s_egl.eglDestroyImageKHR(m_eglDisplay,
+  return eglDestroyImageKHR(m_eglDisplay,
                                   reinterpret_cast<EGLImageKHR>(image));
 }
 
@@ -731,13 +732,13 @@ EGLBoolean Renderer::destroyClientImage(HandleType image) {
 // The framebuffer lock should be held when calling this function !
 //
 bool Renderer::bind_locked() {
-  EGLContext prevContext = s_egl.eglGetCurrentContext();
-  EGLSurface prevReadSurf = s_egl.eglGetCurrentSurface(EGL_READ);
-  EGLSurface prevDrawSurf = s_egl.eglGetCurrentSurface(EGL_DRAW);
+  EGLContext prevContext = eglGetCurrentContext();
+  EGLSurface prevReadSurf = eglGetCurrentSurface(EGL_READ);
+  EGLSurface prevDrawSurf = eglGetCurrentSurface(EGL_DRAW);
 
-  if (!s_egl.eglMakeCurrent(m_eglDisplay, m_pbufSurface, m_pbufSurface,
+  if (!eglMakeCurrent(m_eglDisplay, m_pbufSurface, m_pbufSurface,
                             m_pbufContext)) {
-    ERROR("eglMakeCurrent failed: 0x%04x", s_egl.eglGetError());
+    ERROR("eglMakeCurrent failed: 0x%04x", eglGetError());
     return false;
   }
 
@@ -748,11 +749,11 @@ bool Renderer::bind_locked() {
 }
 
 bool Renderer::bindWindow_locked(RendererWindow *window) {
-  EGLContext prevContext = s_egl.eglGetCurrentContext();
-  EGLSurface prevReadSurf = s_egl.eglGetCurrentSurface(EGL_READ);
-  EGLSurface prevDrawSurf = s_egl.eglGetCurrentSurface(EGL_DRAW);
+  EGLContext prevContext = eglGetCurrentContext();
+  EGLSurface prevReadSurf = eglGetCurrentSurface(EGL_READ);
+  EGLSurface prevDrawSurf = eglGetCurrentSurface(EGL_DRAW);
 
-  if (!s_egl.eglMakeCurrent(m_eglDisplay, window->surface, window->surface,
+  if (!eglMakeCurrent(m_eglDisplay, window->surface, window->surface,
                             m_eglContext)) {
     ERROR("eglMakeCurrent failed");
     return false;
@@ -765,7 +766,7 @@ bool Renderer::bindWindow_locked(RendererWindow *window) {
 }
 
 bool Renderer::unbind_locked() {
-  if (!s_egl.eglMakeCurrent(m_eglDisplay, m_prevDrawSurf, m_prevReadSurf,
+  if (!eglMakeCurrent(m_eglDisplay, m_prevDrawSurf, m_prevReadSurf,
                             m_prevContext)) {
     return false;
   }
@@ -886,28 +887,28 @@ void Renderer::draw(RendererWindow *window, const Renderable &renderable,
 
   const auto &cb = color_buffer->second.cb;
 
-  s_gles2.glUseProgram(prog.id);
-  s_gles2.glUniform1i(prog.tex_uniform, 0);
-  s_gles2.glUniformMatrix4fv(prog.display_transform_uniform, 1, GL_FALSE,
+  glUseProgram(prog.id);
+  glUniform1i(prog.tex_uniform, 0);
+  glUniformMatrix4fv(prog.display_transform_uniform, 1, GL_FALSE,
                              glm::value_ptr(window->display_transform));
-  s_gles2.glUniformMatrix4fv(prog.screen_to_gl_coords_uniform, 1, GL_FALSE,
+  glUniformMatrix4fv(prog.screen_to_gl_coords_uniform, 1, GL_FALSE,
                              glm::value_ptr(window->screen_to_gl_coords));
 
-  s_gles2.glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0);
 
   auto const &rect = renderable.screen_position();
   GLfloat centerx = rect.left() + rect.width() / 2.0f;
   GLfloat centery = rect.top() + rect.height() / 2.0f;
-  s_gles2.glUniform2f(prog.center_uniform, centerx, centery);
+  glUniform2f(prog.center_uniform, centerx, centery);
 
-  s_gles2.glUniformMatrix4fv(prog.transform_uniform, 1, GL_FALSE,
+  glUniformMatrix4fv(prog.transform_uniform, 1, GL_FALSE,
                              glm::value_ptr(renderable.transformation()));
 
   if (prog.alpha_uniform >= 0)
-    s_gles2.glUniform1f(prog.alpha_uniform, renderable.alpha());
+    glUniform1f(prog.alpha_uniform, renderable.alpha());
 
-  s_gles2.glEnableVertexAttribArray(prog.position_attr);
-  s_gles2.glEnableVertexAttribArray(prog.texcoord_attr);
+  glEnableVertexAttribArray(prog.position_attr);
+  glEnableVertexAttribArray(prog.texcoord_attr);
 
   m_primitives.clear();
   tessellate(m_primitives, {
@@ -917,22 +918,22 @@ void Renderer::draw(RendererWindow *window, const Renderable &renderable,
   for (auto const &p : m_primitives) {
     cb->bind();
 
-    s_gles2.glVertexAttribPointer(prog.position_attr, 3, GL_FLOAT, GL_FALSE,
+    glVertexAttribPointer(prog.position_attr, 3, GL_FLOAT, GL_FALSE,
                                   sizeof(anbox::graphics::Vertex),
                                   &p.vertices[0].position);
-    s_gles2.glVertexAttribPointer(prog.texcoord_attr, 2, GL_FLOAT, GL_FALSE,
+    glVertexAttribPointer(prog.texcoord_attr, 2, GL_FLOAT, GL_FALSE,
                                   sizeof(anbox::graphics::Vertex),
                                   &p.vertices[0].texcoord);
 
-    s_gles2.glEnable(GL_BLEND);
-    s_gles2.glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE,
+    glEnable(GL_BLEND);
+    glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE,
                                 GL_ONE_MINUS_SRC_ALPHA);
 
-    s_gles2.glDrawArrays(p.type, 0, p.nvertices);
+    glDrawArrays(p.type, 0, p.nvertices);
   }
 
-  s_gles2.glDisableVertexAttribArray(prog.texcoord_attr);
-  s_gles2.glDisableVertexAttribArray(prog.position_attr);
+  glDisableVertexAttribArray(prog.texcoord_attr);
+  glDisableVertexAttribArray(prog.position_attr);
 }
 
 bool Renderer::draw(EGLNativeWindowType native_window,
@@ -948,15 +949,15 @@ bool Renderer::draw(EGLNativeWindowType native_window,
     return false;
 
   setupViewport(w->second, window_frame);
-  s_gles2.glViewport(0, 0, window_frame.width(), window_frame.height());
-  s_gles2.glClearColor(0.0, 0.0, 0.0, 1.0);
-  s_gles2.glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  s_gles2.glClear(GL_COLOR_BUFFER_BIT);
+  glViewport(0, 0, window_frame.width(), window_frame.height());
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  glClear(GL_COLOR_BUFFER_BIT);
 
   for (const auto &r : renderables)
     draw(w->second, r, r.alpha() < 1.0f ? m_alphaProgram : m_defaultProgram);
 
-  s_egl.eglSwapBuffers(m_eglDisplay, w->second->surface);
+  eglSwapBuffers(m_eglDisplay, w->second->surface);
 
   unbind_locked();
 

@@ -46,8 +46,8 @@ intptr_t RenderThread::main() {
   RenderThreadInfo threadInfo;
   ChecksumCalculatorThreadInfo threadChecksumInfo;
 
-  threadInfo.m_glDec.initGL(gles1_dispatch_get_proc_func, NULL);
-  threadInfo.m_gl2Dec.initGL(gles2_dispatch_get_proc_func, NULL);
+//  threadInfo.m_glDec.initGL(gles1_dispatch_get_proc_func, NULL);
+//  threadInfo.m_gl2Dec.initGL(gles2_dispatch_get_proc_func, NULL);
   initRenderControlContext(&threadInfo.m_rcDec);
 
   ReadBuffer readBuf(STREAM_BUFFER_SIZE);

@@ -35,20 +35,20 @@ namespace {
 // On success, return the handle of the new compiled shader, or 0 on failure.
 GLuint createShader(GLint shaderType, const char* shaderText) {
   // Create new shader handle and attach source.
-  GLuint shader = s_gles2.glCreateShader(shaderType);
+  GLuint shader = glCreateShader(shaderType);
   if (!shader) {
     return 0;
   }
   const GLchar* text = static_cast<const GLchar*>(shaderText);
   const GLint textLen = ::strlen(shaderText);
-  s_gles2.glShaderSource(shader, 1, &text, &textLen);
+  glShaderSource(shader, 1, &text, &textLen);
 
   // Compiler the shader.
   GLint success;
-  s_gles2.glCompileShader(shader);
-  s_gles2.glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+  glCompileShader(shader);
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
   if (success == GL_FALSE) {
-    s_gles2.glDeleteShader(shader);
+    glDeleteShader(shader);
     return 0;
   }
 
@@ -106,42 +106,42 @@ TextureDraw::TextureDraw(EGLDisplay)
   mVertexShader = createShader(GL_VERTEX_SHADER, kVertexShaderSource);
   mFragmentShader = createShader(GL_FRAGMENT_SHADER, kFragmentShaderSource);
 
-  mProgram = s_gles2.glCreateProgram();
-  s_gles2.glAttachShader(mProgram, mVertexShader);
-  s_gles2.glAttachShader(mProgram, mFragmentShader);
+  mProgram = glCreateProgram();
+  glAttachShader(mProgram, mVertexShader);
+  glAttachShader(mProgram, mFragmentShader);
 
   GLint success;
-  s_gles2.glLinkProgram(mProgram);
-  s_gles2.glGetProgramiv(mProgram, GL_LINK_STATUS, &success);
+  glLinkProgram(mProgram);
+  glGetProgramiv(mProgram, GL_LINK_STATUS, &success);
   if (success == GL_FALSE) {
     GLchar messages[256];
-    s_gles2.glGetProgramInfoLog(mProgram, sizeof(messages), 0, &messages[0]);
+    glGetProgramInfoLog(mProgram, sizeof(messages), 0, &messages[0]);
     ERROR("Could not create/link program: %s", messages);
-    s_gles2.glDeleteProgram(mProgram);
+    glDeleteProgram(mProgram);
     mProgram = 0;
     return;
   }
 
-  s_gles2.glUseProgram(mProgram);
+  glUseProgram(mProgram);
 
   // Retrieve attribute/uniform locations.
-  mPositionSlot = s_gles2.glGetAttribLocation(mProgram, "position");
-  s_gles2.glEnableVertexAttribArray(mPositionSlot);
+  mPositionSlot = glGetAttribLocation(mProgram, "position");
+  glEnableVertexAttribArray(mPositionSlot);
 
-  mInCoordSlot = s_gles2.glGetAttribLocation(mProgram, "inCoord");
-  s_gles2.glEnableVertexAttribArray(mInCoordSlot);
+  mInCoordSlot = glGetAttribLocation(mProgram, "inCoord");
+  glEnableVertexAttribArray(mInCoordSlot);
 
-  mTextureSlot = s_gles2.glGetUniformLocation(mProgram, "texture");
+  mTextureSlot = glGetUniformLocation(mProgram, "texture");
 
   // Create vertex and index buffers.
-  s_gles2.glGenBuffers(1, &mVertexBuffer);
-  s_gles2.glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
-  s_gles2.glBufferData(GL_ARRAY_BUFFER, sizeof(kVertices), kVertices,
+  glGenBuffers(1, &mVertexBuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(kVertices), kVertices,
                        GL_STATIC_DRAW);
 
-  s_gles2.glGenBuffers(1, &mIndexBuffer);
-  s_gles2.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-  s_gles2.glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(kIndices), kIndices,
+  glGenBuffers(1, &mIndexBuffer);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(kIndices), kIndices,
                        GL_STATIC_DRAW);
 }
 
@@ -155,58 +155,58 @@ bool TextureDraw::draw(GLuint texture) {
 
   GLenum err;
 
-  s_gles2.glUseProgram(mProgram);
-  err = s_gles2.glGetError();
+  glUseProgram(mProgram);
+  err = glGetError();
   if (err != GL_NO_ERROR) {
     ERROR("Could not use program error 0x%x", err);
   }
 
   // Setup the |position| attribute values.
-  s_gles2.glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
-  err = s_gles2.glGetError();
+  glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+  err = glGetError();
   if (err != GL_NO_ERROR) {
     ERROR("Could not bind GL_ARRAY_BUFFER error=0x%x", err);
   }
 
-  s_gles2.glEnableVertexAttribArray(mPositionSlot);
-  s_gles2.glVertexAttribPointer(mPositionSlot, 3, GL_FLOAT, GL_FALSE,
+  glEnableVertexAttribArray(mPositionSlot);
+  glVertexAttribPointer(mPositionSlot, 3, GL_FLOAT, GL_FALSE,
                                 sizeof(Vertex), 0);
-  err = s_gles2.glGetError();
+  err = glGetError();
   if (err != GL_NO_ERROR) {
     ERROR("Could glVertexAttribPointer with mPositionSlot error 0x%x", err);
   }
 
   // Setup the |inCoord| attribute values.
-  s_gles2.glEnableVertexAttribArray(mInCoordSlot);
-  s_gles2.glVertexAttribPointer(
+  glEnableVertexAttribArray(mInCoordSlot);
+  glVertexAttribPointer(
       mInCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
       reinterpret_cast<GLvoid*>(static_cast<uintptr_t>(sizeof(float) * 3)));
 
   // setup the |texture| uniform value.
-  s_gles2.glActiveTexture(GL_TEXTURE0);
-  s_gles2.glBindTexture(GL_TEXTURE_2D, texture);
-  s_gles2.glUniform1i(mTextureSlot, 0);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glUniform1i(mTextureSlot, 0);
 
   // Validate program, just to be sure.
-  s_gles2.glValidateProgram(mProgram);
+  glValidateProgram(mProgram);
   GLint validState = 0;
-  s_gles2.glGetProgramiv(mProgram, GL_VALIDATE_STATUS, &validState);
+  glGetProgramiv(mProgram, GL_VALIDATE_STATUS, &validState);
   if (validState == GL_FALSE) {
     GLchar messages[256];
-    s_gles2.glGetProgramInfoLog(mProgram, sizeof(messages), 0, &messages[0]);
+    glGetProgramInfoLog(mProgram, sizeof(messages), 0, &messages[0]);
     ERROR("Could not run program: %s", messages);
     return false;
   }
 
   // Do the rendering.
-  s_gles2.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-  err = s_gles2.glGetError();
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
+  err = glGetError();
   if (err != GL_NO_ERROR) {
     ERROR("Could not glBindBuffer(GL_ELEMENT_ARRAY_BUFFER) error 0x%x", err);
   }
 
-  s_gles2.glDrawElements(GL_TRIANGLES, kIndicesLen, GL_UNSIGNED_BYTE, 0);
-  err = s_gles2.glGetError();
+  glDrawElements(GL_TRIANGLES, kIndicesLen, GL_UNSIGNED_BYTE, 0);
+  err = glGetError();
   if (err != GL_NO_ERROR) {
     ERROR("Could not glDrawElements() error 0x%x", err);
   }
@@ -217,13 +217,13 @@ bool TextureDraw::draw(GLuint texture) {
 }
 
 TextureDraw::~TextureDraw() {
-  s_gles2.glDeleteBuffers(1, &mIndexBuffer);
-  s_gles2.glDeleteBuffers(1, &mVertexBuffer);
+  glDeleteBuffers(1, &mIndexBuffer);
+  glDeleteBuffers(1, &mVertexBuffer);
 
   if (mFragmentShader) {
-    s_gles2.glDeleteShader(mFragmentShader);
+    glDeleteShader(mFragmentShader);
   }
   if (mVertexShader) {
-    s_gles2.glDeleteShader(mVertexShader);
+    glDeleteShader(mVertexShader);
   }
 }

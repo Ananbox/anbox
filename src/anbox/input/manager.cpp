@@ -22,13 +22,12 @@
 #include "anbox/utils.h"
 
 #include <boost/format.hpp>
-#define INPUT_DEVICE_DIR "./rootfs/dev/input"
+//#define INPUT_DEVICE_DIR "./rootfs/dev/input"
 
 namespace anbox::input {
-Manager::Manager(const std::shared_ptr<Runtime> &runtime) : runtime_(runtime) {
+Manager::Manager(const std::shared_ptr<Runtime> &runtime, const std::string &dir) : runtime_(runtime), dir_(dir) {
   //const auto dir = SystemConfiguration::instance().input_device_dir();
   // ananbox: temporarily set dir
-  const std::string dir = INPUT_DEVICE_DIR;
   utils::ensure_paths({dir});
 
   // The directory is bind-mounted into the container but might have user
@@ -53,7 +52,7 @@ std::uint32_t Manager::next_id() {
 
 std::string Manager::build_device_path(const std::uint32_t &id) {
     // ananbox: temporarily set dir
-  return (boost::format("%1%/event%2%") % INPUT_DEVICE_DIR % id).str();
+  return (boost::format("%1%/event%2%") % dir_ % id).str();
 }
 
 }

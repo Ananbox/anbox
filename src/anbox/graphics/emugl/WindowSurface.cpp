@@ -38,7 +38,7 @@ WindowSurface::WindowSurface(EGLDisplay display, EGLConfig config)
 
 WindowSurface::~WindowSurface() {
   if (mSurface) {
-    s_egl.eglDestroySurface(mDisplay, mSurface);
+    eglDestroySurface(mDisplay, mSurface);
   }
 }
 
@@ -105,11 +105,11 @@ bool WindowSurface::flushColorBuffer() {
   }
 
   // Make the surface current
-  EGLContext prevContext = s_egl.eglGetCurrentContext();
-  EGLSurface prevReadSurf = s_egl.eglGetCurrentSurface(EGL_READ);
-  EGLSurface prevDrawSurf = s_egl.eglGetCurrentSurface(EGL_DRAW);
+  EGLContext prevContext = eglGetCurrentContext();
+  EGLSurface prevReadSurf = eglGetCurrentSurface(EGL_READ);
+  EGLSurface prevDrawSurf = eglGetCurrentSurface(EGL_DRAW);
 
-  if (!s_egl.eglMakeCurrent(mDisplay, mSurface, mSurface,
+  if (!eglMakeCurrent(mDisplay, mSurface, mSurface,
                             mDrawContext->getEGLContext())) {
     ERROR("Failed to make draw context current");
     return false;
@@ -118,7 +118,7 @@ bool WindowSurface::flushColorBuffer() {
   mAttachedColorBuffer->blitFromCurrentReadBuffer();
 
   // restore current context/surface
-  s_egl.eglMakeCurrent(mDisplay, prevDrawSurf, prevReadSurf, prevContext);
+  eglMakeCurrent(mDisplay, prevDrawSurf, prevReadSurf, prevContext);
 
   return true;
 }
@@ -129,20 +129,20 @@ bool WindowSurface::resize(unsigned int p_width, unsigned int p_height) {
     return true;
   }
 
-  EGLContext prevContext = s_egl.eglGetCurrentContext();
-  EGLSurface prevReadSurf = s_egl.eglGetCurrentSurface(EGL_READ);
-  EGLSurface prevDrawSurf = s_egl.eglGetCurrentSurface(EGL_DRAW);
+  EGLContext prevContext = eglGetCurrentContext();
+  EGLSurface prevReadSurf = eglGetCurrentSurface(EGL_READ);
+  EGLSurface prevDrawSurf = eglGetCurrentSurface(EGL_DRAW);
   EGLSurface prevPbuf = mSurface;
   bool needRebindContext =
       mSurface && (prevReadSurf == mSurface || prevDrawSurf == mSurface);
 
   if (needRebindContext) {
-    s_egl.eglMakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE,
+    eglMakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE,
                          EGL_NO_CONTEXT);
   }
 
   if (mSurface) {
-    s_egl.eglDestroySurface(mDisplay, mSurface);
+    eglDestroySurface(mDisplay, mSurface);
     mSurface = NULL;
   }
 
@@ -152,7 +152,7 @@ bool WindowSurface::resize(unsigned int p_width, unsigned int p_height) {
       EGL_NONE,
   };
 
-  mSurface = s_egl.eglCreatePbufferSurface(mDisplay, mConfig, pbufAttribs);
+  mSurface = eglCreatePbufferSurface(mDisplay, mConfig, pbufAttribs);
   if (mSurface == EGL_NO_SURFACE) {
     ERROR("Failed to create/resize pbuffer");
     return false;
@@ -162,7 +162,7 @@ bool WindowSurface::resize(unsigned int p_width, unsigned int p_height) {
   mHeight = p_height;
 
   if (needRebindContext) {
-    s_egl.eglMakeCurrent(
+    eglMakeCurrent(
         mDisplay, (prevDrawSurf == prevPbuf) ? mSurface : prevDrawSurf,
         (prevReadSurf == prevPbuf) ? mSurface : prevReadSurf, prevContext);
   }

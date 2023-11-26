@@ -15,10 +15,16 @@
 */
 #ifndef _LIBRENDER_COLORBUFFER_H
 #define _LIBRENDER_COLORBUFFER_H
+#define EGL_EGLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES/gl.h>
+#include <GLES/glext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 
 #include <memory>
 
@@ -72,12 +78,12 @@ class ColorBuffer {
   // |p_internalFormat| is the internal pixel format to use, valid values
   // are: GL_RGB, GL_RGB565, GL_RGBA, GL_RGB5_A1_OES and GL_RGBA4_OES.
   // Implementation is free to use something else though.
-  // |has_eglimage_texture_2d| should be true iff the display supports
+  // |hamage_texture_2d| should be true iff the display supports
   // the EGL_KHR_gl_texture_2D_image extension.
   // Returns NULL on failure.
   static ColorBuffer* create(EGLDisplay p_display, int p_width, int p_height,
                              GLenum p_internalFormat,
-                             bool has_eglimage_texture_2d, Helper* helper);
+                             bool hamage_texture_2d, Helper* helper);
 
   // Destructor.
   ~ColorBuffer();

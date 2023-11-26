@@ -25,8 +25,8 @@
 
 #include <string.h>
 
-GLESv2Dispatch s_gles2;
-GLESv1Dispatch s_gles1;
+GLESv2Dispatch 
+GLESv1Dispatch 
 
 namespace {
 constexpr const char *default_egl_lib{"libEGL.so.1"};
@@ -56,11 +56,11 @@ bool initialize(const std::vector<GLLibrary> &libs, emugl_logger_struct *log_fun
         return false;
       break;
     case GLLibrary::Type::GLESv1:
-      if (!gles1_dispatch_init(path, &s_gles1))
+      if (!gles1_dispatch_init(path, &)
         return false;
       break;
     case GLLibrary::Type::GLESv2:
-      if (!gles2_dispatch_init(path, &s_gles2))
+      if (!gles2_dispatch_init(path, &)
         return false;
       break;
     default:
@@ -73,10 +73,10 @@ bool initialize(const std::vector<GLLibrary> &libs, emugl_logger_struct *log_fun
   // This allows us to still manage the major chunk of Android applications
   // which are all >= GLESv2 until we have a proper GLESv1->GLESv2
   // translation mechanism in place.
-  if (!s_gles1.initialized)
-    gles1_dispatch_init(nullptr, &s_gles1);
+  if (!initialized)
+    gles1_dispatch_init(nullptr, &;
 
-  if (!s_egl.initialized || !s_gles2.initialized)
+  if (!initialized || !initialized)
     return false;
 
   return true;

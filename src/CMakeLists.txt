@@ -174,15 +174,15 @@ set(SOURCES
 
     anbox/graphics/emugl/ColorBuffer.cpp
     anbox/graphics/emugl/ColorBuffer.h
-    anbox/graphics/emugl/DispatchTables.h
+    #anbox/graphics/emugl/DispatchTables.h
     anbox/graphics/emugl/DisplayManager.cpp
     anbox/graphics/emugl/DisplayManager.h
     anbox/graphics/emugl/ReadBuffer.cpp
     anbox/graphics/emugl/ReadBuffer.h
     anbox/graphics/emugl/Renderable.cpp
     anbox/graphics/emugl/Renderable.h
-    anbox/graphics/emugl/RenderApi.cpp
-    anbox/graphics/emugl/RenderApi.h
+    #anbox/graphics/emugl/RenderApi.cpp
+    #anbox/graphics/emugl/RenderApi.h
     anbox/graphics/emugl/RenderContext.cpp
     anbox/graphics/emugl/RenderContext.h
     anbox/graphics/emugl/RenderControl.cpp
@@ -362,8 +362,11 @@ target_link_libraries(anbox-core
   emugl_common
   GLESv1_dec
   GLESv2_dec
+  EGL
+  GLESv1_CM
+  GLESv2
   renderControl_dec
-  OpenGLESDispatch
+  #OpenGLESDispatch
   OpenglCodecCommon)
   #anbox-protobuf)
   #xdg)

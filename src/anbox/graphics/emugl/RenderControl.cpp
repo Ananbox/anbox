@@ -74,7 +74,7 @@ static EGLint rcQueryEGLString(EGLenum name, void* buffer, EGLint bufferSize) {
   if (!renderer)
     return 0;
 
-  std::string result = s_egl.eglQueryString(renderer->getDisplay(), name);
+  std::string result = eglQueryString(renderer->getDisplay(), name);
   if (result.empty())
     return 0;
 
@@ -104,9 +104,9 @@ static EGLint rcGetGLString(EGLenum name, void* buffer, EGLint bufferSize) {
   if (tInfo && tInfo->currContext) {
     const char* str = nullptr;
     if (tInfo->currContext->isGL2())
-      str = reinterpret_cast<const char*>(s_gles2.glGetString(name));
+      str = reinterpret_cast<const char*>(glGetString(name));
     else
-      str = reinterpret_cast<const char*>(s_gles1.glGetString(name));
+      str = reinterpret_cast<const char*>(glGetString(name));
 
     if (str)
       result += str;
