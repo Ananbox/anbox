@@ -55,7 +55,7 @@ void *GLESv2Decoder::s_getProc(const char *name, void *userData)
 
 int GLESv2Decoder::initGL(get_proc_func_t getProcFunc, void *getProcFuncData)
 {
-    this->initDispatchByName(getProcFunc, getProcFuncData);
+//    this->initDispatchByName(getProcFunc, getProcFuncData);
 
     glGetCompressedTextureFormats = s_glGetCompressedTextureFormats;
     glVertexAttribPointerData = s_glVertexAttribPointerData;
@@ -72,7 +72,7 @@ int GLESv2Decoder::initGL(get_proc_func_t getProcFunc, void *getProcFuncData)
 int GLESv2Decoder::s_glFinishRoundTrip(void *self)
 {
     GLESv2Decoder *ctx = (GLESv2Decoder *)self;
-    ctx->glFinish();
+    glFinish();
     return 0;
 }
 
@@ -81,11 +81,11 @@ void GLESv2Decoder::s_glGetCompressedTextureFormats(void *self, int count, GLint
     GLESv2Decoder *ctx = (GLESv2Decoder *) self;
 
     int nFormats;
-    ctx->glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &nFormats);
+    glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &nFormats);
     if (nFormats > count) {
         fprintf(stderr, "%s: GetCompressedTextureFormats: The requested number of formats does not match the number that is reported by OpenGL\n", __FUNCTION__);
     } else {
-        ctx->glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
+        glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
     }
 }
 
@@ -97,7 +97,7 @@ void GLESv2Decoder::s_glVertexAttribPointerData(void *self, GLuint indx, GLint s
         ctx->m_contextData->storePointerData(indx, data, datalen);
         // note - the stride of the data is always zero when it comes out of the codec.
         // See gl2.attrib for the packing function call.
-        ctx->glVertexAttribPointer(indx, size, type, normalized, 0, ctx->m_contextData->pointerData(indx));
+        glVertexAttribPointer(indx, size, type, normalized, 0, ctx->m_contextData->pointerData(indx));
     }
 }
 
@@ -105,25 +105,25 @@ void GLESv2Decoder::s_glVertexAttribPointerOffset(void *self, GLuint indx, GLint
                                                GLboolean normalized, GLsizei stride,  GLuint data)
 {
     GLESv2Decoder *ctx = (GLESv2Decoder *) self;
-    ctx->glVertexAttribPointer(indx, size, type, normalized, stride, SafePointerFromUInt(data));
+    glVertexAttribPointer(indx, size, type, normalized, stride, SafePointerFromUInt(data));
 }
 
 
 void GLESv2Decoder::s_glDrawElementsData(void *self, GLenum mode, GLsizei count, GLenum type, void * data, GLuint datalen)
 {
     GLESv2Decoder *ctx = (GLESv2Decoder *)self;
-    ctx->glDrawElements(mode, count, type, data);
+    glDrawElements(mode, count, type, data);
 }
 
 
 void GLESv2Decoder::s_glDrawElementsOffset(void *self, GLenum mode, GLsizei count, GLenum type, GLuint offset)
 {
     GLESv2Decoder *ctx = (GLESv2Decoder *)self;
-    ctx->glDrawElements(mode, count, type, SafePointerFromUInt(offset));
+    glDrawElements(mode, count, type, SafePointerFromUInt(offset));
 }
 
 void GLESv2Decoder::s_glShaderString(void *self, GLuint shader, const GLchar* string, GLsizei len)
 {
     GLESv2Decoder *ctx = (GLESv2Decoder *)self;
-    ctx->glShaderSource(shader, 1, &string, NULL);
+    glShaderSource(shader, 1, &string, NULL);
 }

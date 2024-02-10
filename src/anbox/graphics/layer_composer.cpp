@@ -24,12 +24,12 @@ namespace anbox::graphics {
 LayerComposer::LayerComposer(const std::shared_ptr<Renderer> renderer, const std::shared_ptr<Strategy> &strategy)
     : renderer_(renderer), strategy_(strategy) {}
     */
-LayerComposer::LayerComposer(const std::shared_ptr<Renderer> renderer, const graphics::Rect rect, const EGLNativeWindowType native_window)
+LayerComposer::LayerComposer(const std::shared_ptr<Renderer> renderer, const std::shared_ptr<graphics::Rect> rect, const EGLNativeWindowType native_window)
     : renderer_(renderer), rect_(rect), native_window_(native_window){}
 
 LayerComposer::~LayerComposer() {}
 
 void LayerComposer::submit_layers(const RenderableList &renderables) {
-    renderer_->draw(native_window_, rect_, renderables);
+    renderer_->draw(native_window_, *rect_, renderables);
 }
 }

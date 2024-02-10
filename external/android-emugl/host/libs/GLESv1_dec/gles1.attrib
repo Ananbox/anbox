@@ -1,6 +1,8 @@
 GLOBAL
 	base_opcode 1024
 	encoder_headers "glUtils.h" "GLEncoderUtils.h"
+	server_context_headers <GLES/gl.h> <GLES/glext.h>
+	decoder_headers <GLES/gl.h> <GLES/glext.h>
 	
 #void glClipPlanef(GLenum plane, GLfloat *equation)
 glClipPlanef
@@ -586,11 +588,11 @@ glDiscardFramebufferEXT
 	dir attachments in
 	len attachments (numAttachments * sizeof(const GLenum))
 
-#void glMultiDrawArraysEXT(GLenum mode, const GLint *first, const GLsizei *count, GLsizei primcount)
+#void glMultiDrawArraysEXT(GLenum mode, GLint *first, GLsizei *count, GLsizei primcount)
 glMultiDrawArraysEXT
 	flag unsupported
 	
-#void glMultiDrawElementsEXT(GLenum mode, const GLsizei *count, GLenum type, const GLvoid* const *indices, GLsizei primcount)
+#void glMultiDrawElementsEXT(GLenum mode, GLsizei *count, GLenum type, const GLvoid **indices, GLsizei primcount)
 glMultiDrawElementsEXT
 	flag unsupported
 

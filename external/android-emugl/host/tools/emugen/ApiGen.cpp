@@ -68,6 +68,7 @@ int ApiGen::genProcTypes(const std::string &filename, SideType side)
     fprintf(fp, "#ifndef __%s_%s_proc_t_h\n", basename, sideString(side));
     fprintf(fp, "#define __%s_%s_proc_t_h\n", basename, sideString(side));
     fprintf(fp, "\n\n");
+
     fprintf(fp, "\n#include \"%s_types.h\"\n",basename);
     fprintf(fp, "#ifndef %s_APIENTRY\n",basename);
     fprintf(fp, "#define %s_APIENTRY \n",basename);
@@ -76,6 +77,9 @@ int ApiGen::genProcTypes(const std::string &filename, SideType side)
 
     for (size_t i = 0; i < size(); i++) {
         EntryPoint *e = &at(i);
+        // ananbox: only gen customerDecoder
+        if (!e->customDecoder() && !strcmp(basename, "renderControl") == 0)
+            continue;
 
         fprintf(fp, "typedef ");
         e->retval().printType(fp);
@@ -94,6 +98,7 @@ int ApiGen::genProcTypes(const std::string &filename, SideType side)
         }
         fprintf(fp, ");\n");
     }
+
     fprintf(fp, "\n\n#endif\n");
     return 0;
 }
@@ -155,10 +160,22 @@ int ApiGen::genContext(const std::string & filename, SideType side)
     fprintf(fp, "\nstruct %s_%s_context_t {\n\n",
             m_basename.c_str(), sideString(side));
 
+    // ananbox: generate need only
+    if ((strcmp(m_basename.c_str(), "renderControl") == 0 && strcmp(sideString(side), "server") == 0)) {
+        // API entry points
+        for (size_t i = 0; i < size(); i++) {
+            EntryPoint *e = &at(i);
+            fprintf(fp, "\t%s_%s_proc_t %s;\n", e->name().c_str(), sideString(side),
+                    e->name().c_str());
+        }
+    }
     // API entry points
     for (size_t i = 0; i < size(); i++) {
         EntryPoint *e = &at(i);
-        fprintf(fp, "\t%s_%s_proc_t %s;\n", e->name().c_str(), sideString(side), e->name().c_str());
+        if (!e->customDecoder())
+            continue;
+        fprintf(fp, "\t%s_%s_proc_t %s;\n", e->name().c_str(), sideString(side),
+                e->name().c_str());
     }
 
     // virtual destructor
@@ -171,6 +188,7 @@ int ApiGen::genContext(const std::string & filename, SideType side)
     }
 
     // init function
+
     fprintf(fp, "\tint initDispatchByName( void *(*getProc)(const char *name, void *userData), void *userData);\n");
 
     //client site set error virtual func
@@ -800,17 +818,21 @@ int ApiGen::genContextImpl(const std::string &filename, SideType side)
     fprintf(fp, "#include \"%s_%s_context.h\"\n\n\n", m_basename.c_str(), sideString(side));
     fprintf(fp, "#include <stdio.h>\n\n");
 
-    fprintf(fp, "int %s::initDispatchByName(void *(*getProc)(const char *, void *userData), void *userData)\n{\n", classname.c_str());
-    for (size_t i = 0; i < n; i++) {
-        EntryPoint *e = &at(i);
-        fprintf(fp, "\t%s = (%s_%s_proc_t) getProc(\"%s\", userData);\n",
-                e->name().c_str(),
-                e->name().c_str(),
-                sideString(side),
-                e->name().c_str());
+    if (strcmp(m_basename.c_str(), "renderControl") == 0) {
+        fprintf(fp,
+                "int %s::initDispatchByName(void *(*getProc)(const char *, void *userData), void *userData)\n{\n",
+                classname.c_str());
+        for (size_t i = 0; i < n; i++) {
+            EntryPoint *e = &at(i);
+            fprintf(fp, "\t%s = (%s_%s_proc_t) getProc(\"%s\", userData);\n",
+                    e->name().c_str(),
+                    e->name().c_str(),
+                    sideString(side),
+                    e->name().c_str());
+        }
+        fprintf(fp, "\treturn 0;\n");
+        fprintf(fp, "}\n\n");
     }
-    fprintf(fp, "\treturn 0;\n");
-    fprintf(fp, "}\n\n");
     fclose(fp);
     return 0;
 }
@@ -829,6 +851,7 @@ int ApiGen::genDecoderImpl(const std::string &filename)
 
     size_t n = size();
 
+    fprintf(fp, "\n#define GL_GLEXT_PROTOTYPES\n");
     fprintf(fp, "\n\n#include <string.h>\n");
     fprintf(fp, "#include \"%s_opcodes.h\"\n\n", m_basename.c_str());
     fprintf(fp, "#include \"%s_dec.h\"\n\n\n", m_basename.c_str());
@@ -946,9 +969,13 @@ int ApiGen::genDecoderImpl(const std::string &filename)
 
 
             if (pass == PASS_FunctionCall) {
-                fprintf(fp, "\t\t\t%s(", e->name().c_str());
+                // ananbox: customDeocder
                 if (e->customDecoder()) {
+                    fprintf(fp, "\t\t\tthis->%s(", e->name().c_str());
                     fprintf(fp, "this"); // add a context to the call
+                }
+                else {
+                    fprintf(fp, "\t\t\t%s(", e->name().c_str());
                 }
             } else if (pass == PASS_DebugPrint) {
                 fprintf(fp,

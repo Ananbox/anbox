@@ -81,15 +81,15 @@ bool gles2_dispatch_init(const char *path, GLESv2Dispatch *dispatch_table)
 //
 void *gles2_dispatch_get_proc_func(const char *name, void *userData)
 {
-    void* func = NULL;
+    void* func = (void *)eglGetProcAddress(name);
 
-    if (s_gles2_lib && !func) {
-        func = (void *)s_gles2_lib->findSymbol(name);
-    }
-
-    if (!func) {
-        func = (void *)s_egl.eglGetProcAddress(name);
-    }
+//    if (s_gles2_lib && !func) {
+//        func = (void *)s_gles2_lib->findSymbol(name);
+//    }
+//
+//    if (!func) {
+//        func = (void *)s_egl.eglGetProcAddress(name);
+//    }
 
     // To make it consistent with the guest, redirect any unsupported functions
     // to gles2_unimplemented.

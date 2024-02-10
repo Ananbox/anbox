@@ -44,7 +44,7 @@ class LayerComposer {
                 const std::shared_ptr<Strategy> &strategy);
                 */
   LayerComposer(const std::shared_ptr<Renderer> renderer,
-                graphics::Rect rect,
+                std::shared_ptr<graphics::Rect> rect,
                 EGLNativeWindowType native_window);
   ~LayerComposer();
 
@@ -52,7 +52,7 @@ class LayerComposer {
 
  private:
   std::shared_ptr<Renderer> renderer_;
-  graphics::Rect rect_;
+  std::shared_ptr<graphics::Rect> rect_;
   EGLNativeWindowType native_window_;
   //std::shared_ptr<Strategy> strategy_;
 };

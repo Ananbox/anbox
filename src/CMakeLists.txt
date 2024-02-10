@@ -366,7 +366,7 @@ target_link_libraries(anbox-core
   GLESv1_CM
   GLESv2
   renderControl_dec
-  #OpenGLESDispatch
+  OpenGLESDispatch
   OpenglCodecCommon)
   #anbox-protobuf)
   #xdg)
