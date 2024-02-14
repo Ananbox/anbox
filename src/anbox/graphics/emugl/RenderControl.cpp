@@ -39,6 +39,10 @@ void registerLayerComposer(
   composer = c;
 }
 
+void unRegisterLayerComposer() {
+    composer = NULL;
+}
+
 void registerRenderer(const std::shared_ptr<Renderer> &r) {
   renderer = r;
 }
