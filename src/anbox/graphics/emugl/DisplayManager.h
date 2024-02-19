@@ -29,18 +29,16 @@ class DisplayInfo {
   static std::shared_ptr<DisplayInfo> get();
 
   void set_resolution(const std::uint32_t &vertical, const std::uint32_t horizontal);
-  void set_dpi(const std::uint32_t &dpiX, const std::uint32_t dpiY);
+  void set_dpi(const std::uint32_t &dpi);
 
   std::uint32_t vertical_resolution() const;
   std::uint32_t horizontal_resolution() const;
-  std::uint32_t getDpiX() const;
-  std::uint32_t getDpiY() const;
+  std::uint32_t getDpi() const;
 
  private:
   std::uint32_t vertical_resolution_ = 1280;
   std::uint32_t horizontal_resolution_ = 720;
-  std::uint32_t dpiX_ = 120;
-  std::uint32_t dpiY_ = 120;
+  std::uint32_t dpi_ = 160;
 };
 }
 #endif

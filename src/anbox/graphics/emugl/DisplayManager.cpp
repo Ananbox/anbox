@@ -28,17 +28,14 @@ void DisplayInfo::set_resolution(const std::uint32_t &vertical, const std::uint3
   horizontal_resolution_ = horizontal;
 }
 
-void DisplayInfo::set_dpi(const std::uint32_t &dpiX, const std::uint32_t dpiY) {
-    dpiX_ = dpiX;
-    dpiY_ = dpiY;
+void DisplayInfo::set_dpi(const std::uint32_t &dpi) {
+    dpi_ = dpi;
 }
 
 std::uint32_t DisplayInfo::vertical_resolution() const { return vertical_resolution_; }
 
 std::uint32_t DisplayInfo::horizontal_resolution() const { return horizontal_resolution_; }
 
-std::uint32_t DisplayInfo::getDpiX() const { return dpiX_; }
-
-std::uint32_t DisplayInfo::getDpiY() const { return dpiY_; }
+std::uint32_t DisplayInfo::getDpi() const { return dpi_; }
 
 }

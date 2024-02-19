@@ -16,8 +16,9 @@
  */
 
 #include "anbox/qemu//boot_properties_message_processor.h"
-#include "anbox/graphics/density.h"
+#include "anbox/graphics/emugl/DisplayManager.h"
 #include "anbox/utils.h"
+#include <sys/system_properties.h>
 
 namespace anbox::qemu {
 BootPropertiesMessageProcessor::BootPropertiesMessageProcessor(
@@ -32,10 +33,13 @@ void BootPropertiesMessageProcessor::handle_command(
 }
 
 void BootPropertiesMessageProcessor::list_properties() {
+  char memfd_value[PROP_VALUE_MAX];
+  __system_property_get("sys.use_memfd", memfd_value);
   std::vector<std::string> properties = {
-      // TODO(morphis): Using HDPI here for now but should be adjusted to the
       // device we're running on
-      utils::string_format("ro.sf.lcd_density=%d", static_cast<int>(graphics::current_density())),
+      utils::string_format("ro.sf.lcd_density=%d", static_cast<int>(graphics::emugl::DisplayInfo::get()->getDpi())),
+      utils::string_format("ro.ananbox.host.api_level=%d", android_get_device_api_level()),
+      utils::string_format("sys.use_memfd=%d", atoi(memfd_value)),
   };
 
   for (const auto &prop : properties) {

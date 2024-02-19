@@ -392,12 +392,13 @@ int rcGetDisplayHeight(uint32_t display_id) {
 
 int rcGetDisplayDpiX(uint32_t display_id) {
   (void)display_id;
-  return static_cast<int>(anbox::graphics::emugl::DisplayInfo::get()->getDpiX());
+  // ananbox: revert rcGetDisplayDpiX & rcGetDisplayDpiY because it didn't work
+  return 120;
 }
 
 int rcGetDisplayDpiY(uint32_t display_id) {
   (void)display_id;
-  return static_cast<int>(anbox::graphics::emugl::DisplayInfo::get()->getDpiY());
+  return 120;
 }
 
 int rcGetDisplayVsyncPeriod(uint32_t display_id) {
