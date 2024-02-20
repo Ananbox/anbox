@@ -57,7 +57,8 @@ PRODUCT_CHARACTERISTICS := emulator
 PRODUCT_AAPT_CONFIG := normal
 
 PRODUCT_COPY_FILES += \
-	vendor/anbox/scripts/anbox-init.sh:root/anbox-init.sh \
+	vendor/anbox/scripts/run.sh:root/run.sh \
+	vendor/anbox/android/anboxd.rc:system/etc/init/anboxd.rc \
 	vendor/anbox/products/anbox.xml:system/etc/permissions/anbox.xml
 
 PRODUCT_PACKAGES += \
