@@ -109,3 +109,4 @@ include $(TMP_PATH)/android/gps/Android.mk
 include $(TMP_PATH)/android/lights/Android.mk
 include $(TMP_PATH)/android/camera/Android.mk
 include $(TMP_PATH)/android/vibrator/Android.mk
+include $(TMP_PATH)/android/wifi_hal/Android.mk

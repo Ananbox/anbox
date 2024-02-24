@@ -63,14 +63,16 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_PACKAGES += \
 	hwcomposer.anbox \
-	Launcher2
+	Launcher2 \
+	CMFileManager 
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.hardware=goldfish \
 	ro.hardware.hwcomposer=anbox \
 	ro.kernel.qemu.gles=1 \
-	ro.kernel.qemu=1
-	ro.adb.qemud=1
+	ro.kernel.qemu=1 \
+	ro.adb.qemud=1 \
+	service.adb.tcp.port=5555 
 
 # Disable any software key elements in the UI
 PRODUCT_PROPERTY_OVERRIDES += \

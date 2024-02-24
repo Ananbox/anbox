@@ -1,5 +1,4 @@
-#
-# Copyright (C) 2013 The Android Open-Source Project
+# Copyright (C) 2017 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
-$(call inherit-product, $(LOCAL_PATH)/arm64/device.mk)
-$(call inherit-product, $(LOCAL_PATH)/anbox.mk)
+LOCAL_PATH := $(call my-dir)
 
-PRODUCT_NAME := anbox_arm64
-# We're using device/generic/arm64/BoardConfig.mk here
-PRODUCT_DEVICE := arm64
-PRODUCT_BRAND := Android
-PRODUCT_MODEL := Anbox
+# Make the HAL library
+# ============================================================
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS := -Wall -Wextra -Werror
+
+LOCAL_C_INCLUDES += \
+	$(call include-path-for, libhardware_legacy)/hardware_legacy \
+
+
+LOCAL_SRC_FILES := \
+	info.cpp \
+	interface.cpp \
+	wifi_hal.cpp \
+#	netlink.cpp \
+#	netlinkmessage.cpp \
+
+
+LOCAL_MODULE := libwifi-hal-emu
+
+include $(BUILD_STATIC_LIBRARY)
+
