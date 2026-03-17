@@ -12,7 +12,13 @@ touch $DIR/rootfs/dev/pmsg0
 mkdir -p $DIR/rootfs/data/media/0
 mkdir -p $DIR/rootfs/data/system_ce/0
 mkdir -p $DIR/rootfs/data/misc_ce/0
-#export PROOT_NO_SECCOMP=1
+kernel_version=$(uname -r | cut -d- -f1)
+major=$(echo $kernel_version | cut -d. -f1)
+minor=$(echo $kernel_version | cut -d. -f2)
+# disable seccomp in kernel < 4.8 for compatibility
+if [ "$major" -lt 4 ] || { [ "$major" -eq 4 ] && [ "$minor" -lt 8 ]; }; then
+    export PROOT_NO_SECCOMP=1
+fi
 export PATH=/sbin:/system/bin:/system/sbin:/system/xbin:/system/vendor/bin 
 export ANDROID_ASSETS=/assets 
 export ANDROID_DATA=/data 
