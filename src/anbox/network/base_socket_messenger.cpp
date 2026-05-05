@@ -27,6 +27,10 @@
 
 #include <stdexcept>
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
+
 namespace bs = boost::system;
 namespace ba = boost::asio;
 
@@ -89,7 +93,11 @@ void BaseSocketMessenger<stream_protocol>::send(char const* data,
                 boost::asio::transfer_all());
     } catch (const boost::system::system_error& err) {
       if (err.code() == boost::asio::error::try_again) continue;
+#ifndef __ANDROID__
       throw;
+#else
+      __android_log_print(ANDROID_LOG_ERROR, "BaseSocketMessenger", "socket err code: %s", err.what());
+#endif
     }
     break;
   }
