@@ -90,6 +90,15 @@ set(SOURCES
     anbox/build/config.h
     anbox/build/config.h.in
 
+    # The camera backend that provides the CameraDevice static factories is
+    # selected below; only the shared parts are listed here.
+    anbox/camera/camera_common.h
+    anbox/camera/camera_device.h
+    anbox/camera/camera_format_converters.cpp
+    anbox/camera/camera_format_converters.h
+    anbox/camera/camera_service.cpp
+    anbox/camera/camera_service.h
+
     #anbox/cmds/container_manager.cpp
     #anbox/cmds/container_manager.h
     #anbox/cmds/launch.cpp
@@ -343,8 +352,25 @@ set(SOURCES
     #anbox/system_configuration.cpp
     #anbox/system_configuration.h)
 
+# Exactly one camera backend is compiled in. Both implement the interface in
+# anbox/camera/camera_device.h and both define the CameraDevice static
+# factories, so picking two would give duplicate symbols. The guest talks to
+# either of them through the same 'pipe:qemud:camera' protocol.
+# The selection is by platform rather than by an option because the Linux
+# backend needs <linux/videodev2.h> and the Android backend needs the NDK
+# camera2 headers; neither compiles on the other platform.
+if(ANDROID)
+  set(CAMERA_BACKEND_SOURCE anbox/camera/camera_device_android.cpp)
+  set(CAMERA_BACKEND_LIBRARIES camera2ndk mediandk android)
+else()
+  set(CAMERA_BACKEND_SOURCE anbox/camera/camera_device_linux.cpp)
+  set(CAMERA_BACKEND_LIBRARIES "")
+endif()
+list(APPEND SOURCES ${CAMERA_BACKEND_SOURCE})
+
 add_library(anbox-core STATIC ${SOURCES})
 target_link_libraries(anbox-core
+  ${CAMERA_BACKEND_LIBRARIES}
   ${Boost_LIBRARIES}
   ${SDL2_LDFLAGS}
   ${SDL2_LIBRARIES}

@@ -61,12 +61,18 @@ class PipeConnectionCreator
   };
 
  private:
+  // The client type plus whatever followed it in the pipe identifier. Only
+  // the camera service uses the extra part today: the guest identifies itself
+  // as 'pipe:qemud:camera:name=<device> inp_channel=<n>' and the device name
+  // picks which camera to open.
+  struct ClientParams;
+
   int next_id();
 
-  client_type identify_client(
+  ClientParams identify_client(
       std::shared_ptr<network::SocketMessenger> const &messenger);
   std::shared_ptr<network::MessageProcessor> create_processor(
-      const client_type &type,
+      const ClientParams &params,
       const std::shared_ptr<network::SocketMessenger> &messenger);
 
   std::shared_ptr<Renderer> renderer_;

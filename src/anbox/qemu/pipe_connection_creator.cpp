@@ -68,6 +68,12 @@ std::string client_type_to_string(
 }
 }
 namespace anbox::qemu {
+
+struct PipeConnectionCreator::ClientParams {
+  PipeConnectionCreator::client_type type;
+  std::string extra;
+};
+
 PipeConnectionCreator::PipeConnectionCreator(std::shared_ptr<Renderer> renderer, std::shared_ptr<Runtime> rt, std::shared_ptr<anbox::application::SensorsState> sensors_state, std::shared_ptr<anbox::application::GpsInfoBroker> gpsInfoBroker)
     : renderer_(renderer),
       runtime_(rt),
@@ -94,25 +100,25 @@ void PipeConnectionCreator::create_connection_for(
     std::shared_ptr<boost::asio::local::stream_protocol::socket> const
         &socket) {
   auto const messenger = std::make_shared<network::LocalSocketMessenger>(socket);
-  const auto type = identify_client(messenger);
-  auto const processor = create_processor(type, messenger);
+  const auto params = identify_client(messenger);
+  auto const processor = create_processor(params, messenger);
   if (!processor)
     BOOST_THROW_EXCEPTION(std::runtime_error("Unhandled client type"));
 
   std::shared_ptr<network::SocketConnection> connection;
-  if (type == client_type::opengles)
+  if (params.type == client_type::opengles)
     connection = std::make_shared<graphics::OpenGlesSocketConnection>(
         messenger, messenger, next_id(), connections_, processor);
   else
     connection = std::make_shared<network::SocketConnection>(
         messenger, messenger, next_id(), connections_, processor);
 
-  connection->set_name(client_type_to_string(type));
+  connection->set_name(client_type_to_string(params.type));
   connections_->add(connection);
   connection->read_next_message();
 }
 
-PipeConnectionCreator::client_type PipeConnectionCreator::identify_client(
+PipeConnectionCreator::ClientParams PipeConnectionCreator::identify_client(
     std::shared_ptr<network::SocketMessenger> const &messenger) {
   // The client will identify itself as first thing by writing a string
   // in the format 'pipe:<name>[:<arguments>]\0' to the channel.
@@ -127,56 +133,70 @@ PipeConnectionCreator::client_type PipeConnectionCreator::identify_client(
 
   std::string identifier_and_args = buffer.data();
 
+  client_type type;
+  std::string extra;
+
   if (utils::string_starts_with(identifier_and_args, "pipe:opengles"))
-    return client_type::opengles;
+    type = client_type::opengles;
   // Even if 'boot-properties' is an argument to the service 'qemud' here we
   // take this as a own service instance as that is what it is.
   else if (utils::string_starts_with(identifier_and_args,
                                      "pipe:qemud:boot-properties"))
-    return client_type::qemud_boot_properties;
+    type = client_type::qemud_boot_properties;
   else if (utils::string_starts_with(identifier_and_args,
                                      "pipe:qemud:hw-control"))
-    return client_type::qemud_hw_control;
+    type = client_type::qemud_hw_control;
   else if (utils::string_starts_with(identifier_and_args, "pipe:qemud:sensors"))
-    return client_type::qemud_sensors;
-  else if (utils::string_starts_with(identifier_and_args, "pipe:qemud:camera"))
-    return client_type::qemud_camera;
+    type = client_type::qemud_sensors;
+  else if (utils::string_starts_with(identifier_and_args, "pipe:qemud:camera")) {
+    type = client_type::qemud_camera;
+
+    // 'pipe:qemud:camera' is 16 characters. The camera service is the only
+    // client with a parameter string, written as 'pipe:qemud:camera:<args>'.
+    // Without one the service runs in factory mode and only answers 'list'.
+    const auto separator = identifier_and_args.find(':', 16);
+    if (separator != std::string::npos && separator + 1 < identifier_and_args.size())
+      extra = identifier_and_args.substr(separator + 1);
+  }
   else if (utils::string_starts_with(identifier_and_args,
                                      "pipe:qemud:fingerprintlisten"))
-    return client_type::qemud_fingerprint;
+    type = client_type::qemud_fingerprint;
   else if (utils::string_starts_with(identifier_and_args, "pipe:qemud:gsm"))
-    return client_type::qemud_gsm;
+    type = client_type::qemud_gsm;
   else if (utils::string_starts_with(identifier_and_args,
                                      "pipe:anbox:bootanimation"))
-    return client_type::bootanimation;
+    type = client_type::bootanimation;
   else if (utils::string_starts_with(identifier_and_args, "pipe:qemud:adb"))
-    return client_type::qemud_adb;
+    type = client_type::qemud_adb;
   else if (utils::string_starts_with(identifier_and_args, "pipe:qemud:gps"))
-    return client_type::qemud_gps;
-  return client_type::invalid;
+    type = client_type::qemud_gps;
+  else
+    type = client_type::invalid;
+
+  return { type, extra };
 }
 
 std::shared_ptr<network::MessageProcessor>
 PipeConnectionCreator::create_processor(
-    const client_type &type,
+    const ClientParams &params,
     const std::shared_ptr<network::SocketMessenger> &messenger) {
-  if (type == client_type::opengles)
+  if (params.type == client_type::opengles)
     return std::make_shared<graphics::OpenGlesMessageProcessor>(renderer_, messenger);
-  else if (type == client_type::qemud_boot_properties)
+  else if (params.type == client_type::qemud_boot_properties)
     return std::make_shared<qemu::BootPropertiesMessageProcessor>(messenger);
-  else if (type == client_type::qemud_hw_control)
+  else if (params.type == client_type::qemud_hw_control)
     return std::make_shared<qemu::HwControlMessageProcessor>(messenger);
-  else if (type == client_type::qemud_sensors)
+  else if (params.type == client_type::qemud_sensors)
     return std::make_shared<qemu::SensorsMessageProcessor>(messenger, sensors_state_);
-  else if (type == client_type::qemud_camera)
-    return std::make_shared<qemu::CameraMessageProcessor>(messenger);
-  else if (type == client_type::qemud_fingerprint)
+  else if (params.type == client_type::qemud_camera)
+    return std::make_shared<qemu::CameraMessageProcessor>(messenger, params.extra);
+  else if (params.type == client_type::qemud_fingerprint)
     return std::make_shared<qemu::FingerprintMessageProcessor>(messenger);
-  else if (type == client_type::qemud_gsm)
+  else if (params.type == client_type::qemud_gsm)
     return std::make_shared<qemu::GsmMessageProcessor>(messenger);
-  else if (type == client_type::qemud_adb)
+  else if (params.type == client_type::qemud_adb)
     return std::make_shared<qemu::AdbMessageProcessor>(runtime_, messenger);
-  else if (type == client_type::qemud_gps)
+  else if (params.type == client_type::qemud_gps)
     return std::make_shared<qemu::GpsMessageProcessor>(messenger, gps_info_broker_);
 
   return std::make_shared<qemu::NullMessageProcessor>();
