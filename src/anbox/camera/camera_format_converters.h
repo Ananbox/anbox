@@ -74,6 +74,55 @@ int convert_frame(const void* frame,
                   float b_scale,
                   float exp_comp);
 
+/* Describes one plane of an externally supplied YUV frame.
+ *
+ * This is used by backends that receive frames from an API which hands out
+ * one descriptor per plane and where lines may be padded, e.g. the Android NDK
+ * AImage/AHardwareBuffer. Each descriptor points at the first byte of the
+ * plane and describes how to walk it.
+ *
+ * All fields are in bytes.
+ */
+typedef struct PlaneDesc {
+  /* Address of the first byte of the plane. */
+  const uint8_t*  data;
+  /* Distance between two vertically adjacent pixels of the plane. */
+  size_t          row_stride;
+  /* Distance between two horizontally adjacent pixels of the plane. For an
+   * interleaved chroma plane this is the distance between the two chroma
+   * components, i.e. 2. */
+  size_t          pixel_stride;
+} PlaneDesc;
+
+/* Packs a three plane YUV 4:2:0 frame into a YV12 buffer.
+ *
+ * The Android NDK reports YUV 4:2:0 frames as one full resolution plane plus
+ * two half resolution chroma planes which may be interleaved and may be
+ * padded. The converters below expect tightly packed YV12, so the frame has
+ * to be repacked first.
+ *
+ * Param:
+ *  y, u, v - Plane descriptors, each pointing at the first byte of its own
+ *      plane. U and V may alias one buffer (the NDK case) or live in separate
+ *      buffers; only y may be NULL-checked defensively.
+ *  width, height - Frame dimensions in pixels.
+ *  dst_format - Either V4L2_PIX_FMT_YVU420, V4L2_PIX_FMT_YUV420,
+ *      V4L2_PIX_FMT_NV12 or V4L2_PIX_FMT_NV21.
+ *  dst - Destination buffer.
+ *  dst_size - Size of the destination buffer. Must be at least
+ *      width * height * 3 / 2.
+ * Return:
+ *  0 on success, non-zero on failure.
+ */
+int pack_yuv420_planes(const PlaneDesc& y,
+                       const PlaneDesc& u,
+                       const PlaneDesc& v,
+                       int width,
+                       int height,
+                       uint32_t dst_format,
+                       uint8_t* dst,
+                       size_t dst_size);
+
 }
 
 #endif  /* ANDROID_CAMERA_CAMERA_FORMAT_CONVERTERS_H */

@@ -19,7 +19,48 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#if defined(ANDROID)
+/* Android has no <linux/videodev2.h>. The converters only need the fourcc
+ * constants; their values are fixed by the V4L2 ABI, so define the ones used
+ * below locally. */
+#include <stdint.h>
+#define v4l2_fourcc(a, b, c, d)                                         \
+  (static_cast<uint32_t>(a) | (static_cast<uint32_t>(b) << 8) |         \
+   (static_cast<uint32_t>(c) << 16) | (static_cast<uint32_t>(d) << 24))
+#define V4L2_PIX_FMT_RGB32   v4l2_fourcc('B', 'G', 'R', '4')
+#define V4L2_PIX_FMT_BGR32   v4l2_fourcc('B', 'G', 'R', '4')
+#define V4L2_PIX_FMT_RGB24   v4l2_fourcc('B', 'G', 'R', '3')
+#define V4L2_PIX_FMT_BGR24   v4l2_fourcc('B', 'G', 'R', '3')
+#define V4L2_PIX_FMT_RGB565  v4l2_fourcc('R', 'G', 'B', 'P')
+#define V4L2_PIX_FMT_YUYV    v4l2_fourcc('Y', 'U', 'Y', 'V')
+#define V4L2_PIX_FMT_UYVY    v4l2_fourcc('U', 'Y', 'V', 'Y')
+#define V4L2_PIX_FMT_YVYU    v4l2_fourcc('Y', 'V', 'Y', 'U')
+#define V4L2_PIX_FMT_VYUY    v4l2_fourcc('V', 'Y', 'U', 'Y')
+#define V4L2_PIX_FMT_YYUV    v4l2_fourcc('Y', 'Y', 'U', 'V')
+#define V4L2_PIX_FMT_YYVU    v4l2_fourcc('Y', 'Y', 'V', 'U')
+#define V4L2_PIX_FMT_YUY2    v4l2_fourcc('Y', 'U', 'Y', '2')
+#define V4L2_PIX_FMT_YUNV    v4l2_fourcc('Y', 'U', 'N', 'V')
+#define V4L2_PIX_FMT_V422    v4l2_fourcc('V', '4', '2', '2')
+#define V4L2_PIX_FMT_YUV420  v4l2_fourcc('Y', 'U', '1', '2')
+#define V4L2_PIX_FMT_YVU420  v4l2_fourcc('Y', 'V', '1', '2')
+#define V4L2_PIX_FMT_NV12    v4l2_fourcc('N', 'V', '1', '2')
+#define V4L2_PIX_FMT_NV21    v4l2_fourcc('N', 'V', '2', '1')
+#define V4L2_PIX_FMT_SBGGR8  v4l2_fourcc('B', 'A', '8', '1')
+#define V4L2_PIX_FMT_SGBRG8  v4l2_fourcc('G', 'B', 'R', 'G')
+#define V4L2_PIX_FMT_SGRBG8  v4l2_fourcc('G', 'R', 'B', 'G')
+#define V4L2_PIX_FMT_SRGGB8  v4l2_fourcc('R', 'G', 'G', 'B')
+#define V4L2_PIX_FMT_SBGGR10 v4l2_fourcc('B', 'G', '1', '0')
+#define V4L2_PIX_FMT_SGBRG10 v4l2_fourcc('G', 'B', '1', '0')
+#define V4L2_PIX_FMT_SGRBG10 v4l2_fourcc('B', 'A', '1', '0')
+#define V4L2_PIX_FMT_SRGGB10 v4l2_fourcc('R', 'G', '1', '0')
+#define V4L2_PIX_FMT_SBGGR12 v4l2_fourcc('B', 'G', '1', '2')
+#define V4L2_PIX_FMT_SGBRG12 v4l2_fourcc('G', 'B', '1', '2')
+#define V4L2_PIX_FMT_SGRBG12 v4l2_fourcc('B', 'A', '1', '2')
+#define V4L2_PIX_FMT_SRGGB12 v4l2_fourcc('R', 'G', '1', '2')
+#else
 #include <linux/videodev2.h>
+#endif
 #include "anbox/camera/camera_format_converters.h"
 #include "anbox/logger.h"
 
@@ -1701,6 +1742,146 @@ convert_frame(const void* frame,
                 E("%s: Unexpected source pixel format %d",
                   __FUNCTION__, dst_desc->format_sel);
                 return -1;
+        }
+    }
+
+    return 0;
+}
+
+int
+pack_yuv420_planes(const PlaneDesc& y,
+                   const PlaneDesc& u,
+                   const PlaneDesc& v,
+                   int width,
+                   int height,
+                   uint32_t dst_format,
+                   uint8_t* dst,
+                   size_t dst_size)
+{
+    if (dst == NULL || width <= 0 || height <= 0) {
+        E("%s: Invalid argument", __FUNCTION__);
+        return -1;
+    }
+
+    const int chroma_width = (width + 1) / 2;
+    const int chroma_height = (height + 1) / 2;
+    const size_t luma_size = static_cast<size_t>(width) * height;
+    const size_t needed = luma_size + static_cast<size_t>(chroma_width) *
+                                      chroma_height * 2;
+    if (dst_size < needed) {
+        E("%s: Destination buffer is too small: %zu < %zu",
+          __FUNCTION__, dst_size, needed);
+        return -1;
+    }
+
+    if (y.data == NULL) {
+        E("%s: Luma plane is missing", __FUNCTION__);
+        return -1;
+    }
+
+    /* Luma goes first in all supported YUV 4:2:0 layouts. */
+    for (int line = 0; line < height; line++) {
+        const uint8_t* src = y.data + static_cast<size_t>(line) * y.row_stride;
+        uint8_t* dst_line = dst + static_cast<size_t>(line) * width;
+        if (y.pixel_stride == 1) {
+            memcpy(dst_line, src, width);
+        } else {
+            for (int x = 0; x < width; x++) {
+                dst_line[x] = src[static_cast<size_t>(x) * y.pixel_stride];
+            }
+        }
+    }
+
+    uint8_t* dst_u;
+    uint8_t* dst_v;
+
+    switch (dst_format) {
+     case V4L2_PIX_FMT_NV12:
+     case V4L2_PIX_FMT_NV21: {
+        /* Interleaved chroma pane: one U and one V per two luma pixels.
+         *
+         * The backend hands out three independent plane descriptors: U and V
+         * each start at their own byte, so for AIMAGE_FORMAT_YUV_420_888 the V
+         * plane starts one byte after the U plane in the shared buffer. Use
+         * the earliest of the two as the base; with separate chroma planes
+         * (pixel_stride == 1) the U plane is the base and V is read from its
+         * own descriptor below. */
+        const PlaneDesc* chroma = &u;
+        if (u.data == NULL) {
+            chroma = &v;
+        } else if (v.data != NULL && v.data < u.data) {
+            chroma = &v;
+        }
+        if (chroma->data == NULL) {
+            E("%s: Chroma plane is missing", __FUNCTION__);
+            return -1;
+        }
+        const bool uv_order = dst_format == V4L2_PIX_FMT_NV12;
+        uint8_t* dst_uv = dst + luma_size;
+        for (int line = 0; line < chroma_height; line++) {
+            const uint8_t* src =
+                chroma->data + static_cast<size_t>(line) * chroma->row_stride;
+            uint8_t* dst_line = dst_uv + static_cast<size_t>(line) * chroma_width * 2;
+            for (int x = 0; x < chroma_width; x++) {
+                const uint8_t* px = src + static_cast<size_t>(x) * chroma->pixel_stride;
+                /* AIMAGE_FORMAT_YUV_420_888 always interleaves as U then V. */
+                const bool interleaved = chroma->pixel_stride >= 2;
+                const uint8_t c0 = px[0];
+                /* Separate planes: V comes from its own descriptor. */
+                const uint8_t c1 = interleaved
+                    ? px[1]
+                    : v.data[static_cast<size_t>(line) * v.row_stride +
+                              static_cast<size_t>(x) * v.pixel_stride];
+                if (uv_order) {
+                    dst_line[x * 2 + 0] = c0;
+                    dst_line[x * 2 + 1] = c1;
+                } else {
+                    dst_line[x * 2 + 0] = c1;
+                    dst_line[x * 2 + 1] = c0;
+                }
+            }
+        }
+        return 0;
+     }
+
+     case V4L2_PIX_FMT_YUV420:
+        /* YU12: U plane first, then V. */
+        dst_u = dst + luma_size;
+        dst_v = dst_u + static_cast<size_t>(chroma_width) * chroma_height;
+        break;
+
+     case V4L2_PIX_FMT_YVU420:
+        /* YV12: V plane first, then U. */
+        dst_v = dst + luma_size;
+        dst_u = dst_v + static_cast<size_t>(chroma_width) * chroma_height;
+        break;
+
+     default:
+        E("%s: Unsupported destination format %.4s",
+          __FUNCTION__, reinterpret_cast<const char*>(&dst_format));
+        return -1;
+    }
+
+    if (u.data == NULL || v.data == NULL) {
+        E("%s: Chroma planes are missing", __FUNCTION__);
+        return -1;
+    }
+
+    const PlaneDesc* const planes[2] = { &u, &v };
+    uint8_t* const dsts[2] = { dst_u, dst_v };
+    for (int p = 0; p < 2; p++) {
+        const PlaneDesc* plane = planes[p];
+        uint8_t* out = dsts[p];
+        for (int line = 0; line < chroma_height; line++) {
+            const uint8_t* src = plane->data + static_cast<size_t>(line) * plane->row_stride;
+            uint8_t* dst_line = out + static_cast<size_t>(line) * chroma_width;
+            if (plane->pixel_stride == 1) {
+                memcpy(dst_line, src, chroma_width);
+            } else {
+                for (int x = 0; x < chroma_width; x++) {
+                    dst_line[x] = src[static_cast<size_t>(x) * plane->pixel_stride];
+                }
+            }
         }
     }
 
