@@ -589,12 +589,18 @@ _load_RGB32(const void* rgb, uint8_t* r, uint8_t* g, uint8_t* b)
     return rgb_ptr + 4;
 }
 
-/* Saves R, G, and B colors to a RGB32 framebuffer. */
+/* Saves R, G, and B colors to a RGB32 framebuffer.
+ *
+ * The fourth byte is written as opaque. The guest treats the preview
+ * framebuffer as RGBA and the buffer it hands over is uninitialised (malloc),
+ * so leaving the alpha byte alone means it carries whatever the allocator
+ * left there: an arbitrary, possibly per-pixel varying alpha that a display
+ * path blending on alpha turns into black or noise. */
 void*
 _save_RGB32(void* rgb, uint8_t r, uint8_t g, uint8_t b)
 {
     uint8_t* rgb_ptr = static_cast<uint8_t*>(rgb);
-    rgb_ptr[0] = r; rgb_ptr[1] = g; rgb_ptr[2] = b;
+    rgb_ptr[0] = r; rgb_ptr[1] = g; rgb_ptr[2] = b; rgb_ptr[3] = 0xff;
     return rgb_ptr + 4;
 }
 

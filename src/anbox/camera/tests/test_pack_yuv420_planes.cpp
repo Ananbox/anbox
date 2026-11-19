@@ -285,6 +285,17 @@ void run_roundtrip_case(uint32_t pack_format, const char* label) {
   const unsigned r8 = px & 0xff, g8 = (px >> 8) & 0xff, b8 = (px >> 16) & 0xff;
   std::printf("    centre pixel rgb=(%u,%u,%u)\n", r8, g8, b8);
   CHECK(std::abs((int)r8 - (int)g8) > 2 || std::abs((int)g8 - (int)b8) > 2);
+
+  /* The guest's preview framebuffer is RGBA that it does not initialise, so
+   * every pixel, alpha byte included, has to be written. A partially written
+   * buffer would keep whatever alpha the caller's buffer already had. */
+  size_t opaque = 0;
+  for (size_t i = 0; i < rgb.size(); i++) {
+    if (((rgb[i] >> 24) & 0xff) == 0xff) {
+      opaque++;
+    }
+  }
+  CHECK_EQ_INT((int)opaque, (int)rgb.size());
 }
 
 void run_error_cases() {
